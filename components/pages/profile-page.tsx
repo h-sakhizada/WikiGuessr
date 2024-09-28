@@ -15,9 +15,8 @@ import toast, { Toaster } from "react-hot-toast";
 
 export default function ProfilePage() {
   const user = useProfile();
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [usernameUpdate, setUsernameUpdate] = useState("");
 
   if (user.isLoading) {
     return <LoadingSpinner />;
@@ -27,34 +26,43 @@ export default function ProfilePage() {
     return redirect("/sign-in");
   }
 
-  const handleEdit = (field: string) => {
-    if (!user.data) return;
-    if (field === "username") setUsername(user.data.username);
-    if (field === "email") setEmail(user.data.email);
-    setEditingField(field);
+  const handleEditUsername = () => {
+    if (!user.data) {
+      toast.error("Failed to update username. Please try again.", {
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+      return;
+    }
+
+    setUsernameUpdate(user.data.username);
+    setIsEditingUsername(true);
   };
 
-  const handleSave = async (field: string) => {
-    if (!user.data) return;
+  const handleSaveUsername = async () => {
+    if (!user.data || usernameUpdate === user.data.username) {
+      setIsEditingUsername(false);
+      return;
+    }
+
     try {
-      const updatedData =
-        field === "username"
-          ? { ...user.data, username }
-          : { ...user.data, email };
+      const updatedData = {
+        ...user.data,
+        username: usernameUpdate,
+      };
       await editProfile(updatedData);
-      toast.success(
-        `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`,
-        {
-          iconTheme: {
-            primary: "black",
-            secondary: "white",
-          },
-        }
-      );
-      setEditingField(null);
+      toast.success("Username updated successfully!", {
+        iconTheme: {
+          primary: "black",
+          secondary: "white",
+        },
+      });
+      setIsEditingUsername(false);
       user.refetch();
     } catch (error) {
-      toast.error(`Failed to update ${field}. Please try again.`, {
+      toast.error("Failed to update username. Please try again.", {
         iconTheme: {
           primary: "red",
           secondary: "white",
@@ -103,56 +111,6 @@ export default function ProfilePage() {
     }
   };
 
-  const renderField = (
-    field: string,
-    value: string,
-    editable: boolean = true
-  ) => {
-    const isEditing = editingField === field;
-    const fieldValue = field === "username" ? username : email;
-    const setFieldValue = field === "username" ? setUsername : setEmail;
-    return (
-      <div className="space-y-2">
-        <label
-          htmlFor={field}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          {field.charAt(0).toUpperCase() + field.slice(1)}
-        </label>
-        <div className="flex items-center space-x-2">
-          {isEditing ? (
-            <Input
-              id={field}
-              type={field === "email" ? "email" : "text"}
-              value={fieldValue}
-              onChange={(e) => setFieldValue(e.target.value)}
-              className="flex-grow"
-            />
-          ) : (
-            <p className="flex-grow text-lg text-gray-500 dark:text-gray-400">
-              {value}
-            </p>
-          )}
-          {editable && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                isEditing ? handleSave(field) : handleEdit(field)
-              }
-            >
-              {isEditing ? (
-                <CheckIcon className="h-4 w-4" />
-              ) : (
-                <PencilIcon className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
       <Toaster position="bottom-center" reverseOrder={false} />
@@ -161,13 +119,58 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold">Account Page</h1>
         </header>
         <div className="space-y-4">
-          {renderField("username", user.data.username)}
-          {renderField("email", user.data.email, false)}
-          {renderField(
-            "is_premium",
-            user.data.is_premium ? "Premium User" : "Free User",
-            false
-          )}
+          <div className="space-y-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Username
+            </label>
+            <div className="flex items-center space-x-2">
+              {isEditingUsername ? (
+                <Input
+                  id="username"
+                  type="text"
+                  value={usernameUpdate}
+                  onChange={(e) => setUsernameUpdate(e.target.value)}
+                  className="flex-grow"
+                />
+              ) : (
+                <p className="flex-grow text-lg text-gray-500 dark:text-gray-400">
+                  {user.data.username}
+                </p>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={
+                  isEditingUsername ? handleSaveUsername : handleEditUsername
+                }
+              >
+                {isEditingUsername ? (
+                  <CheckIcon className="h-4 w-4" />
+                ) : (
+                  <PencilIcon className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email Address
+            </label>
+            <p className="text-lg text-gray-500 dark:text-gray-400">
+              {user.data.email}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Account Type
+            </label>
+            <p className="text-lg text-gray-500 dark:text-gray-400">
+              {user.data.is_premium ? "Premium User" : "Free User"}
+            </p>
+          </div>
         </div>
       </div>
       {!user.data.is_premium ? (
