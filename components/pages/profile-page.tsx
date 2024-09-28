@@ -170,14 +170,16 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-      <Button variant="default" onClick={handleUpgradeToPremium}>
-        <Zap className="h-4 w-4 mr-2" />
-        Go Premium
-      </Button>
-
-      <Button variant="ghost" onClick={handleDowngradeToFree}>
-        Downgrade to Free Account
-      </Button>
+      {!user.data.is_premium ? (
+        <Button variant="default" onClick={handleUpgradeToPremium}>
+          <Zap className="h-4 w-4 mr-2" />
+          Go Premium
+        </Button>
+      ) : (
+        <Button variant="ghost" onClick={handleDowngradeToFree}>
+          Downgrade to Free Account
+        </Button>
+      )}
     </div>
   );
 }
