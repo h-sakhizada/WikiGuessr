@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { editProfile } from "@/actions/profile-actions";
-import { PencilIcon, CheckIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, Zap } from "lucide-react";
 import LoadingSpinner from "../loading-spinner";
 
 export default function ProfilePage() {
@@ -103,20 +103,26 @@ export default function ProfilePage() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
-      <header className="text-center mb-2">
-        <h1 className="text-2xl font-bold">Account Page</h1>
-      </header>
+      <div className="grow">
+        <header className="text-center mb-2">
+          <h1 className="text-2xl font-bold">Account Page</h1>
+        </header>
 
-      {message && (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      )}
+        {message && (
+          <Alert>
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        )}
 
-      <div className="space-y-4">
-        {renderField("username", user.data.username)}
-        {renderField("email", user.data.email, false)}
+        <div className="space-y-4">
+          {renderField("username", user.data.username)}
+          {renderField("email", user.data.email, false)}
+        </div>
       </div>
+      <Button variant="default">
+        <Zap className="h-4 w-4 mr-2" />
+        Go Premium
+      </Button>
     </div>
   );
 }
