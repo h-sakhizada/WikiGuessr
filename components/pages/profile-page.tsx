@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { editProfile } from "@/actions/profile-actions";
+import {
+  editProfile,
+  setProfileToFree,
+  setProfileToPremium,
+} from "@/actions/profile-actions";
 import { PencilIcon, CheckIcon, Zap } from "lucide-react";
 import LoadingSpinner from "../loading-spinner";
 import toast, { Toaster } from "react-hot-toast";
@@ -51,6 +55,46 @@ export default function ProfilePage() {
       user.refetch();
     } catch (error) {
       toast.error(`Failed to update ${field}. Please try again.`, {
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    }
+  };
+
+  const handleUpgradeToPremium = async () => {
+    try {
+      await setProfileToPremium();
+      toast.success("Account upgraded to premium successfully!", {
+        iconTheme: {
+          primary: "black",
+          secondary: "white",
+        },
+      });
+      user.refetch();
+    } catch (error) {
+      toast.error("Failed to upgrade account to premium. Please try again.", {
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    }
+  };
+
+  const handleDowngradeToFree = async () => {
+    try {
+      await setProfileToFree();
+      toast.success("Account downgraded to free successfully!", {
+        iconTheme: {
+          primary: "black",
+          secondary: "white",
+        },
+      });
+      user.refetch();
+    } catch (error) {
+      toast.error("Failed to downgrade account to free. Please try again.", {
         iconTheme: {
           primary: "red",
           secondary: "white",
@@ -119,11 +163,20 @@ export default function ProfilePage() {
         <div className="space-y-4">
           {renderField("username", user.data.username)}
           {renderField("email", user.data.email, false)}
+          {renderField(
+            "is_premium",
+            user.data.is_premium ? "Premium User" : "Free User",
+            false
+          )}
         </div>
       </div>
-      <Button variant="default">
+      <Button variant="default" onClick={handleUpgradeToPremium}>
         <Zap className="h-4 w-4 mr-2" />
         Go Premium
+      </Button>
+
+      <Button variant="ghost" onClick={handleDowngradeToFree}>
+        Downgrade to Free Account
       </Button>
     </div>
   );

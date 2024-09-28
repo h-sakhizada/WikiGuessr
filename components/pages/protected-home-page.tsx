@@ -4,6 +4,7 @@ import {
   AwardIcon,
   GamepadIcon,
   InfinityIcon,
+  LockIcon,
   TrophyIcon,
   UserIcon,
 } from "lucide-react";
@@ -64,24 +65,32 @@ export default function ProtectedHomePage() {
         </Card>
       </Link>
 
-      <Link href={"/protected/unlimited"}>
-        <Card className="overflow-hidden transition-all hover:shadow-md cursor-pointer bg-purple-50 dark:bg-purple-900/20">
+      {user.data.is_premium ? (
+        <Link href={"/protected/unlimited"}>
+          <Card className="overflow-hidden transition-all hover:shadow-md cursor-pointer bg-purple-50 dark:bg-purple-900/20">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center justify-center gap-2 text-lg text-purple-700 dark:text-purple-300">
+                <InfinityIcon size={24} />
+                Unlimited Play
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </Link>
+      ) : (
+        <Card className="overflow-hidden transition-all cursor-not-allowed bg-gray-100 dark:bg-gray-800">
           <CardHeader className="p-3">
-            <CardTitle className="flex items-center justify-center gap-2 text-lg text-purple-700 dark:text-purple-300">
-              <InfinityIcon size={24} />
-              Unlimited Play
+            <CardTitle className="flex items-center justify-center gap-2 text-lg text-gray-500 dark:text-gray-400">
+              <LockIcon size={24} />
+              Unlimited Play (Premium Only)
             </CardTitle>
           </CardHeader>
         </Card>
-      </Link>
+      )}
 
       <div className="grid grid-cols-3 gap-2 mt-1">
         {otherActions.map((action, index) => (
-          <Link href={action.link}>
-            <Card
-              key={index}
-              className="overflow-hidden transition-all hover:shadow-sm cursor-pointer"
-            >
+          <Link href={action.link} key={index}>
+            <Card className="overflow-hidden transition-all hover:shadow-sm cursor-pointer">
               <CardHeader className="p-2 text-center">
                 <CardTitle className="flex flex-col items-center gap-1 text-xs">
                   <action.icon size={20} className={action.color} />
