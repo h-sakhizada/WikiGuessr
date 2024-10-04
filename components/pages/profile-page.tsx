@@ -1,17 +1,17 @@
 "use client";
-import { useProfile } from "@/hooks/useProfile";
-import { redirect } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   editProfile,
   setProfileToFree,
   setProfileToPremium,
 } from "@/actions/profile-actions";
-import { PencilIcon, CheckIcon, Zap } from "lucide-react";
-import LoadingSpinner from "../loading-spinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useProfile } from "@/hooks/useProfile";
+import { CheckIcon, PencilIcon, Zap } from "lucide-react";
+import { redirect } from "next/navigation";
+import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import LoadingSpinner from "../loading-spinner";
 
 export default function ProfileClientPage() {
   const user = useProfile();
