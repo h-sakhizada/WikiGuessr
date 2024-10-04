@@ -1,7 +1,5 @@
-import { EnvVarWarning } from "@/components/env-var-warning";
 import HeaderAuth from "@/components/header-auth";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { GeistSans } from "geist/font/sans";
 import Link from "next/link";
 import "./globals.css";
@@ -32,7 +30,7 @@ export default function RootLayout({
                 <Link href={"/"}>WikiGuessr</Link>
               </div>
               <div className="flex gap-2">
-                {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                <HeaderAuth />
                 <ThemeSwitcher />
               </div>
             </div>

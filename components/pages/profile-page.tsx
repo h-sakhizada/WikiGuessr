@@ -13,7 +13,7 @@ import { PencilIcon, CheckIcon, Zap } from "lucide-react";
 import LoadingSpinner from "../loading-spinner";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function ProfilePage() {
+export default function ProfileClientPage() {
   const user = useProfile();
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [usernameUpdate, setUsernameUpdate] = useState("");
@@ -115,7 +115,7 @@ export default function ProfilePage() {
     <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
       <Toaster position="bottom-center" reverseOrder={false} />
       <div className="grow">
-        <header className="text-center mb-2">
+        <header className="text-left mb-2">
           <h1 className="text-2xl font-bold">Account Page</h1>
         </header>
         <div className="space-y-4">

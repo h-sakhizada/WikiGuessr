@@ -1,5 +1,5 @@
-import ProfilePage from "@/components/pages/profile-page";
+import ProfileClientPage from "@/components/pages/profile-page";
 
-export default async function AccountPage() {
-  return <ProfilePage />;
+export default async function ProfilePage() {
+  return <ProfileClientPage />;
 }
