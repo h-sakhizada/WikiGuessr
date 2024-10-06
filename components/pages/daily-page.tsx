@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import LoadingSpinner from "../loading-spinner";
 import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
+import { addVictory } from "@/actions/profile-actions";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -70,7 +72,8 @@ export default function DailyClientPage() {
     error,
     refetch,
   } = useRandomWikipediaArticle();
-  const [currentHint, setCurrentHint] = useState(0);
+  const [currentHint, setCurrentHint] = useState(1);
+  const [guess, setGuess] = useState("");
 
   if (user.isLoading || isLoading) {
     return <LoadingSpinner />;
@@ -83,12 +86,27 @@ export default function DailyClientPage() {
   }
 
   const showNextHint = () => {
-    setCurrentHint((prev) => Math.min(prev + 1, 5));
+    setCurrentHint((prev) => Math.min(prev + 1, 6));
   };
 
   const resetHints = () => {
-    setCurrentHint(0);
+    setCurrentHint(1);
+    setGuess("");
     refetch();
+  };
+
+  const checkGuess = () => {
+    if (article?.fullTitle === guess) {
+      toast.success("You got it!", {
+        iconTheme: { primary: "green", secondary: "white" },
+      });
+      setCurrentHint(6);
+      addVictory(article?.fullTitle);
+    } else {
+      toast.error("Your hubris will be your undoing.", {
+        iconTheme: { primary: "red", secondary: "white" },
+      });
+    }
   };
 
   return (
@@ -99,6 +117,37 @@ export default function DailyClientPage() {
           <CardTitle className="text-2xl font-bold">
             Daily Wikipedia Challenge
           </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-2">
+            <Input
+              id="guess"
+              type="text"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              className="flex-grow border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md"
+            />
+            <Button
+              variant="default"
+              size="lg"
+              onClick={checkGuess}
+              disabled={currentHint > 5}
+            >
+              Guess!
+            </Button>
+            <Button
+              size="lg"
+              onClick={resetHints}
+              className="bg-purple-500 hover:bg-purple-600 text-white"
+            >
+              New Article
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Hints</CardTitle>
         </CardHeader>
         <CardContent>
           {currentHint >= 1 && (
@@ -145,30 +194,40 @@ export default function DailyClientPage() {
               <p className="mt-2">{article?.hint5}</p>
             </div>
           )}
+          {currentHint >= 6 && (
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Answer</h3>
+              <p className="mt-2">The answer was: {article?.fullTitle}</p>
+            </div>
+          )}
         </CardContent>
-        <CardFooter className="flex justify-between">
-          {currentHint < 5 ? (
+        {currentHint < 5 ? (
+          <CardFooter className="flex justify-center">
             <Button
               onClick={showNextHint}
               className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               Show Next Hint
             </Button>
-          ) : (
+          </CardFooter>
+        ) : (
+          <CardFooter className="flex justify-between">
             <Button
-              onClick={() => window.open(article?.url, "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              disabled={currentHint > 5}
+              onClick={showNextHint}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               Reveal Answer
             </Button>
-          )}
-          <Button
-            onClick={resetHints}
-            className="bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            New Article
-          </Button>
-        </CardFooter>
+            <Button
+              disabled={currentHint < 6}
+              onClick={() => window.open(article?.url, "_blank")}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              Visit Page
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
