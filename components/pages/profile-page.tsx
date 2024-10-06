@@ -1,5 +1,6 @@
 "use client";
 import { useProfile } from "@/hooks/useProfile";
+import { getProfileSelectedBadges } from "@/hooks/useProfileBadge";
 import { redirect } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import {
 	setProfileToFree,
 	setProfileToPremium,
 } from "@/actions/profile-actions";
-import { PencilIcon, CheckIcon, Zap, LineChart } from "lucide-react";
+import { PencilIcon, CheckIcon, Zap, LineChart, List } from "lucide-react";
 import LoadingSpinner from "../loading-spinner";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -25,8 +26,13 @@ const convertToBase64 = (file: File) => {
 
 export default function ProfileClientPage() {
 	const user = useProfile();
+  const badges = getProfileSelectedBadges();
 	const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [BadgeArray, setBadgeArray] = useState([]);
+  const [BadgeDataArray, setBadgeDataArray] = useState([]);
+  const [isEditingBio, setIsEditingBio] = useState(false);
 	const [usernameUpdate, setUsernameUpdate] = useState("");
+  const [BioUpdate, setBioUpdate] = useState("");
 	const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement | null>(null); // Properly type the ref
@@ -40,6 +46,9 @@ export default function ProfileClientPage() {
 					? user.data.avatar
 					: "/assets/default_profile_img.png";
 			setAvatarPreview(avatarUrl);
+
+      console.log(badges)
+      //console.log(user)
 		}
 	}, [user.data]);
 
@@ -65,6 +74,25 @@ export default function ProfileClientPage() {
 		setIsEditingUsername(true);
 	};
 
+  const getSelectedBadgeImages = () => {
+
+
+  }
+
+  const handleEditBio = () => {
+		// if (!user.data) {
+		// 	toast.error("Failed to update bio. Please try again.", {
+		// 		iconTheme: {
+		// 			primary: "red",
+		// 			secondary: "white",
+		// 		},
+		// 	});
+		// 	return;
+		// }
+		// //setBioUpdate(user.data.username);
+		setIsEditingBio(true);
+	};
+
 	const handleSaveUsername = async () => {
 		if (!user.data || usernameUpdate === user.data.username) {
 			setIsEditingUsername(false);
@@ -84,6 +112,27 @@ export default function ProfileClientPage() {
 				iconTheme: { primary: "red", secondary: "white" },
 			});
 		}
+	};
+
+  const handleSaveBio = async () => {
+		// if (!user.data || usernameUpdate === user.data.username) {
+			setIsEditingBio(false);
+		// 	return;
+		// }
+
+		// try {
+		// 	const updatedData = { ...user.data, username: usernameUpdate };
+		// 	await editProfile(updatedData);
+		// 	toast.success("Username updated successfully!", {
+		// 		iconTheme: { primary: "black", secondary: "white" },
+		// 	});
+		// 	setIsEditingUsername(false);
+		// 	user.refetch();
+		// } catch (error) {
+		// 	toast.error("Failed to update username. Please try again.", {
+		// 		iconTheme: { primary: "red", secondary: "white" },
+		// 	});
+		// }
 	};
 
 	// Handle avatar upload and Base64 conversion
@@ -158,17 +207,28 @@ export default function ProfileClientPage() {
 	};
 
 	return (
+
+    
+
 		<div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
 			<Toaster position="bottom-center" reverseOrder={false} />
 			<div className="grow">
 				<header className="text-center mb-4">
 					<h1 className="text-2xl font-bold">Account Page</h1>
 				</header>
-				<div className="text-center mb-4">
+
+				<div className="text-center mb-4 flex items-center">
+
+        <div>
+          <img src={BadgeArray[0] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 ml-0" />
+          <img src={BadgeArray[1] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 ml-0" />
+          <img src={BadgeArray[2] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 ml-0" />
+        </div>
+
 					<img
 						src={avatarPreview || "/assets/default_profile_img.png"}
 						alt="Avatar Preview"
-						className="rounded-full w-40 h-40 mx-auto mb-2 object-cover cursor-pointer"
+						className="rounded-full w-40 h-40 mx-auto m-2 object-cover cursor-pointer"
 						onClick={handleImageClick} // Trigger file input when image is clicked
 					/>
 					<input
@@ -178,7 +238,19 @@ export default function ProfileClientPage() {
 						onChange={handleAvatarChange}
 						className="hidden" // Hide the file input
 					/>
+
+        <div>
+          <img src={BadgeArray[3] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 mr-0" />
+          <img src={BadgeArray[4] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 mr-0" />
+          <img src={BadgeArray[5] || "/assets/NoBadge.png"} className="w-20 h-20 m-2 mr-0" />
+        </div>
+
 				</div>
+
+
+        
+
+        
 
 				<div className="space-y-4">
 					<div className="space-y-2">
@@ -230,6 +302,50 @@ export default function ProfileClientPage() {
 							{user.data.email}
 						</p>
 					</div>
+
+
+          <div className="space-y-2">
+						<label
+							htmlFor="bio"
+							className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>
+							Your Bio  --  Brag a little
+						</label>
+						<div className="flex items-center space-x-2">
+							{isEditingBio ? (
+								<Input
+									id="bio"
+									type="text"
+									value={BioUpdate}
+									onChange={(e) =>
+										setBioUpdate(e.target.value)
+									}
+									className="h-40 flex-grow border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md"
+								/>
+							) : (
+								<p className="h-40 flex-grow text-lg border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md">
+									{/* {user.data.username} */}
+                  PLACEHOLDER
+								</p>
+							)}
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={
+									isEditingBio
+										? handleSaveBio
+										: handleEditBio
+								}
+							>
+								{isEditingBio ? (
+									<CheckIcon className="h-4 w-4" />
+								) : (
+									<PencilIcon className="h-4 w-4" />
+								)}
+							</Button>
+						</div>
+					</div>
+
 
 					<div className="space-y-2">
 						<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
