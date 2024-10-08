@@ -14,6 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import EditableInput from "../custom/EditableInput";
 import LoadingSpinner from "../loading-spinner";
+import Link from "next/link";
 
 const convertToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -142,7 +143,12 @@ export default function ProfileClientPage() {
             <h2 className="text-xl font-semibold mb-2">{user.username}</h2>
             <p className="text-sm text-gray-500">{user.email}</p>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Badges</h3>
+          <Link href="/protected/badges">
+            <div className="flex items-center justify-start mb-4 gap-2 text-md text-foreground dark:text-primary">
+              Badges
+              <PlusCircle className="h-4 w-4" />
+            </div>
+          </Link>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 justify-center">
             {renderBadges()}
           </div>
