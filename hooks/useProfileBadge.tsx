@@ -1,22 +1,20 @@
-// "use client";
+"use client";
 
-// import { useQuery } from "@tanstack/react-query";
-// import { getBadgesForUser, UserBadges } from "@/actions/badge-actions";
+import { useQuery } from "@tanstack/react-query";
+import { getBadgesForUser } from "@/actions/badge-actions";
+import { ProfileBadges } from "@/types";
 
-
-
-// export function getProfileSelectedBadges(uuid?: string) {
-//   return useQuery<UserBadges | null, Error>({
-//     queryKey: ["badge", uuid],
-//     queryFn: async () => {
-//       const Badges = await getBadgesForUser(uuid);
-//       if (!Badges) {
-//         console.log("No badges found for user:", uuid);
-//       }
-// ``
-//       console.log(Badges)
-//       return Badges;
-//     },
-//     retry: false, // Don't retry if no profile is found
-//   });
-// }
+export function useProfileSelectedBadges(uuid?: string) {
+  return useQuery<ProfileBadges | null, Error>({
+    queryKey: ["badge", uuid],
+    queryFn: async () => {
+      const badges = await getBadgesForUser(uuid);
+      if (!badges) {
+        console.log("No Badges found for user:", uuid);
+        return null;
+      }
+      return badges;
+    },
+    retry: false, // Don't retry if no profile is found
+  });
+}

@@ -11,7 +11,7 @@ export default function Header() {
       <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-6 animate-fade-in">
         Welcome to WikiGuessr!
       </h1>
-      <p className="text-lg sm:text-xl lg:text-2xl text-center max-w-lg mx-auto text-white ">
+      <p className="text-lg sm:text-xl lg:text-2xl text-center max-w-lg mx-auto text-black dark:text-primary ">
         Test your knowledge and explore the world of Wikipedia!
       </p>
       <div className="w-full max-w-md h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent my-8" />
