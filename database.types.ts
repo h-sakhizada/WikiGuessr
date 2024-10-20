@@ -82,6 +82,7 @@ export type Database = {
           is_premium: boolean
           username: string
           victories: Json[] | null
+          is_admin: boolean
         }
         Insert: {
           avatar?: string | null

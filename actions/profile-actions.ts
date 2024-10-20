@@ -141,3 +141,18 @@ export async function addVictory(
     throw updateError;
   }
 }
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("profile")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching all profiles:", error);
+    throw error;
+  }
+
+  return data as Profile[];
+}
