@@ -1,14 +1,7 @@
 "use server";
+import { Profile } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
-export interface Profile {
-  id: string;
-  username: string;
-  email: string;
-  is_premium: boolean;
-  avatar: string;
-  victories: [];
-}
 export async function getProfile(uuid?: string): Promise<Profile | null> {
   const supabase = createClient();
 
@@ -147,4 +140,19 @@ export async function addVictory(
     console.error("Error processing game results:", updateError);
     throw updateError;
   }
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("profile")
+    .select("*");
+
+  if (error) {
+    console.error("Error fetching all profiles:", error);
+    throw error;
+  }
+
+  return data as Profile[];
 }
