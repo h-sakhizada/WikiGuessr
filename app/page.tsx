@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function Index() {
   const router = useRouter();
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className=" flex flex-col">
       <Hero />
       <main className="flex-1 container mx-auto px-4">
         <section className="mb-12">
@@ -42,9 +42,9 @@ export default function Index() {
             ].map((item, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <item.icon className="h-6 w-6 text-primary" />
+                  <CardTitle className="flex items-start justify-between gap-2">
                     {item.title}
+                    <item.icon className="h-6 w-6 text-primary" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>{item.description}</CardContent>

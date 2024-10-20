@@ -1,14 +1,7 @@
 "use server";
+import { Profile } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
-export interface Profile {
-  id: string;
-  username: string;
-  email: string;
-  is_premium: boolean;
-  avatar: string;
-  victories: [];
-}
 export async function getProfile(uuid?: string): Promise<Profile | null> {
   const supabase = createClient();
 
