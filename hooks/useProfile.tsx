@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getProfile, Profile } from "@/actions/profile-actions";
+import { getProfile } from "@/actions/profile-actions";
+import { Profile } from "@/types";
 
 export function useProfile(uuid?: string) {
   return useQuery<Profile | null, Error>({

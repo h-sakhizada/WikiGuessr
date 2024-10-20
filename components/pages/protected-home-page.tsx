@@ -5,6 +5,7 @@ import {
   GamepadIcon,
   InfinityIcon,
   LockIcon,
+  ShieldIcon,
   TrophyIcon,
   UserIcon,
 } from "lucide-react";
@@ -19,6 +20,8 @@ export default function ProtectedHomePage() {
   if (user.isLoading) {
     return <LoadingSpinner />;
   }
+
+  console.log(user.data);
 
   if (!user.data) {
     return redirect("/sign-in");
@@ -43,6 +46,13 @@ export default function ProtectedHomePage() {
       color: "text-pink-500",
       link: "/protected/badges",
     },
+    // Only include the Admin action if the user is an admin
+    ...(user.data.is_admin ? [{
+      title: "Admin",
+      icon: ShieldIcon,
+      color: "text-red-500",
+      link: "/protected/admin",
+    }] : []),
   ];
 
   return (
