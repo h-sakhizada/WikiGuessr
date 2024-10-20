@@ -38,7 +38,7 @@ export default function ProtectedHomePage() {
       link: "/protected/leaderboard",
     },
     {
-      title: "Badges",
+      title: "Badge Shop",
       icon: AwardIcon,
       color: "text-pink-500",
       link: "/protected/badges",

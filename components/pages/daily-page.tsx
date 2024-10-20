@@ -72,6 +72,7 @@ export default function DailyClientPage() {
     error,
     refetch,
   } = useRandomWikipediaArticle();
+
   const [currentHint, setCurrentHint] = useState(1);
   const [guess, setGuess] = useState("");
 
@@ -103,7 +104,7 @@ export default function DailyClientPage() {
       setCurrentHint(6);
       addVictory(article?.fullTitle);
     } else {
-      toast.error("Your hubris will be your undoing.", {
+      toast.error("Not quite... keep guessing!", {
         iconTheme: { primary: "red", secondary: "white" },
       });
     }

@@ -43,3 +43,19 @@ export async function getBadgesForUser(
 
   return profileBadges;
 }
+
+export async function getAllBadges(): Promise<Badge[] | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.from("badge").select("*");
+
+  if (error) {
+    console.error("Error fetching badges:", error);
+    throw error;
+  }
+
+  if (!data || data.length === 0) return null;
+
+  console.log(data);
+  return data as Badge[];
+}
