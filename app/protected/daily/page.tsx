@@ -1,4 +1,4 @@
-import DailyClientPage from "@/components/pages/daily-page";
+import DailyClientPage from "./components/daily-page";
 
 export default async function DailyPage() {
   return <DailyClientPage />;
