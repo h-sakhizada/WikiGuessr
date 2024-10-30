@@ -9,9 +9,7 @@ import { Database } from "@/database.types";
 import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-
-// Define a type alias for the profile row
-type ProfileRow = Database["public"]["Tables"]["profile"]["Row"];
+import { Profile } from "@/types";
 
 export default function AdminUserManagement() {
   // State to hold user data
@@ -20,7 +18,7 @@ export default function AdminUserManagement() {
   if (isLoading) return <div>Loading...</div>;
   if (!profiles) return <div>No profiles found</div>;
 
-  const columns: ColumnDef<ProfileRow>[] = [
+  const columns: ColumnDef<Profile>[] = [
     {
       id: "select",
       header: ({ table }) => (

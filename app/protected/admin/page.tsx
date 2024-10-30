@@ -23,7 +23,7 @@ export default async function AdminPage() {
       description: "Manage upcoming daily games",
       href: "/protected/admin/daily",
       icon: <Gamepad />,
-      active: false,
+      active: true,
     },
     {
       title: "Settings",

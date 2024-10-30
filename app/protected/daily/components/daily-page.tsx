@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
 import { addVictory } from "@/actions/profile-actions";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Lightbulb, Search, RefreshCw, ExternalLink } from "lucide-react";
 import LoadingSpinner from "@/components/loading-spinner";
+import useDailyGame from "@/hooks/useDailyGame";
 
 interface InfoboxProps {
   info: Record<string, any>;
@@ -23,12 +24,12 @@ interface InfoboxProps {
 
 const WikipediaInfobox = ({ info }: InfoboxProps) => {
   return (
-    <div className="border rounded-lg overflow-hidden bg-gray-50 max-w-md mx-auto">
-      <table className="w-full text-sm text-black">
+    <div className="border rounded-lg overflow-hidden bg-secondary/10">
+      <table className="w-full text-sm">
         <tbody>
           {Object.entries(info).map(([key, value]) => (
             <tr key={key} className="border-b last:border-b-0">
-              <th className="p-2 text-left font-semibold bg-gray-100 w-1/3 align-top">
+              <th className="p-2 text-left font-semibold bg-secondary/20 w-1/3 align-top">
                 {key.replace(/_/g, " ").charAt(0).toUpperCase() +
                   key.replace(/_/g, " ").slice(1)}
               </th>
@@ -40,16 +41,41 @@ const WikipediaInfobox = ({ info }: InfoboxProps) => {
                     ))}
                   </ul>
                 ) : (
-                  <span>
-                    {/* @ts-ignore */}
-                    {value.toString()}
-                  </span>
+                  <span>{value.toString()}</span>
                 )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+};
+
+const HintSection = ({
+  title,
+  isVisible,
+  children,
+}: {
+  title: string;
+  isVisible: boolean;
+  children: React.ReactNode;
+}) => {
+  return (
+    <div
+      className={`transition-all duration-500 ease-in-out overflow-hidden ${
+        isVisible ? "max-h-[1000px] opacity-100 mb-6" : "max-h-0 opacity-0 mb-0"
+      }`}
+    >
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-start justify-between gap-2">
+            {title}
+            <Lightbulb className="h-6 w-6 text-primary" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>{children}</CardContent>
+      </Card>
     </div>
   );
 };
@@ -66,12 +92,7 @@ const formatHint3 = (hint3: string) => {
 
 export default function DailyClientPage() {
   const user = useProfile();
-  const {
-    data: article,
-    isLoading,
-    error,
-    refetch,
-  } = useRandomWikipediaArticle();
+  const { data: article, isLoading, error, refetch } = useDailyGame();
   const [currentHint, setCurrentHint] = useState(1);
   const [guess, setGuess] = useState("");
 
@@ -110,125 +131,131 @@ export default function DailyClientPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="flex flex-col">
       <Toaster />
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Daily Wikipedia Challenge
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-2">
-            <Input
-              id="guess"
-              type="text"
-              value={guess}
-              onChange={(e) => setGuess(e.target.value)}
-              className="flex-grow border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md"
-            />
-            <Button
-              variant="default"
-              size="lg"
-              onClick={checkGuess}
-              disabled={currentHint > 5}
-            >
-              Guess!
-            </Button>
-            <Button
-              size="lg"
-              onClick={resetHints}
-              className="bg-purple-500 hover:bg-purple-600 text-white"
-            >
-              New Article
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Hints</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {currentHint >= 1 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">Hint 1: Related Topics</h3>
-              <ul className="list-disc pl-5">
-                {article?.hint1.map((link, index) => (
-                  <li key={index}>{link}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {currentHint >= 2 && article?.hint2 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">Hint 2: Image</h3>
-              <Image
-                src={article.hint2}
-                alt="Article image"
-                width={300}
-                height={200}
-                className="rounded-lg object-cover mt-2"
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-3xl font-bold text-center">
+              Daily Wikipedia Challenge
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Input
+                id="guess"
+                type="text"
+                value={guess}
+                onChange={(e) => setGuess(e.target.value)}
+                placeholder="Enter your guess..."
+                className="flex-grow text-lg"
               />
+              <Button
+                variant="default"
+                size="lg"
+                onClick={checkGuess}
+                disabled={currentHint > 5}
+                className="group"
+              >
+                Guess
+                <Search className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+              </Button>
+              {/* <Button
+                size="lg"
+                variant="secondary"
+                onClick={resetHints}
+                className="group"
+              >
+                New Article
+                <RefreshCw className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
+              </Button> */}
             </div>
-          )}
-          {currentHint >= 3 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">
-                Hint 3: Additional Information
-              </h3>
-              <div className="mt-2">
-                {article?.hint3 && formatHint3(article.hint3)}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <HintSection title="Related Topics" isVisible={currentHint >= 1}>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              {article?.hint1.map((link, index) => <li key={index}>{link}</li>)}
+            </ul>
+          </HintSection>
+
+          <HintSection title="Image" isVisible={currentHint >= 2}>
+            {article?.hint2 && (
+              <div className="flex justify-center">
+                <Image
+                  src={article.hint2}
+                  alt="Article image"
+                  width={400}
+                  height={300}
+                  className="rounded-lg object-cover"
+                />
               </div>
-            </div>
-          )}
-          {currentHint >= 4 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">Hint 4: Title Initials</h3>
-              <p className="mt-2">{article?.hint4}</p>
-            </div>
-          )}
-          {currentHint >= 5 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">Hint 5: Summary</h3>
-              <p className="mt-2">{article?.hint5}</p>
-            </div>
-          )}
-          {currentHint >= 6 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-2">Answer</h3>
-              <p className="mt-2">The answer was: {article?.fullTitle}</p>
-            </div>
-          )}
-        </CardContent>
-        {currentHint < 5 ? (
-          <CardFooter className="flex justify-center">
-            <Button
-              onClick={showNextHint}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Show Next Hint
-            </Button>
-          </CardFooter>
-        ) : (
-          <CardFooter className="flex justify-between">
-            <Button
-              disabled={currentHint > 5}
-              onClick={showNextHint}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Reveal Answer
-            </Button>
-            <Button
-              disabled={currentHint < 6}
-              onClick={() => window.open(article?.url, "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              Visit Page
-            </Button>
-          </CardFooter>
-        )}
-      </Card>
+            )}
+          </HintSection>
+
+          <HintSection
+            title="Additional Information"
+            isVisible={currentHint >= 3}
+          >
+            {article?.hint3 && formatHint3(article.hint3)}
+          </HintSection>
+
+          <HintSection title="Title Initials" isVisible={currentHint >= 4}>
+            <p className="text-lg text-muted-foreground">{article?.hint4}</p>
+          </HintSection>
+
+          <HintSection title="Summary" isVisible={currentHint >= 5}>
+            <p className="text-muted-foreground leading-relaxed">
+              {article?.hint5}
+            </p>
+          </HintSection>
+
+          <HintSection title="Answer" isVisible={currentHint >= 6}>
+            <p className="text-lg">
+              The answer was:{" "}
+              <span className="font-medium">{article?.fullTitle}</span>
+            </p>
+          </HintSection>
+
+          <div className="flex justify-center pt-4">
+            {currentHint < 5 ? (
+              <Button size="lg" onClick={showNextHint} className="group">
+                Show Next Hint
+                <Lightbulb className="ml-2 h-4 w-4 group-hover:text-yellow-400 transition-colors" />
+              </Button>
+            ) : (
+              <div className="flex gap-4">
+                <Button
+                  disabled={currentHint > 5}
+                  onClick={showNextHint}
+                  className="group"
+                >
+                  Reveal Answer
+                  <Lightbulb className="ml-2 h-4 w-4 group-hover:text-yellow-400 transition-colors" />
+                </Button>
+                <Button
+                  disabled={currentHint < 6}
+                  onClick={() => window.open(article?.url, "_blank")}
+                  variant="secondary"
+                  className="group"
+                >
+                  Visit Page
+                  <ExternalLink className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <section className="bg-secondary/10 rounded-lg p-8 mt-12">
+          <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
+          <p className="text-lg text-muted-foreground">
+            Get up to 5 hints to guess today's Wikipedia article. The fewer
+            hints you need, the better! New challenge every day.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }
