@@ -13,7 +13,15 @@ import { format, isAfter, parseISO, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Trash2, ArrowUpDown, Save, X, Edit } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  ArrowUpDown,
+  Save,
+  X,
+  Edit,
+  ExternalLink,
+} from "lucide-react";
 
 interface EditState {
   [key: number]: {
@@ -149,6 +157,7 @@ const AdminDailyGames = () => {
               size="icon"
               variant="ghost"
               onClick={() => setEditingId(id)}
+              title="Edit Game Title"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -160,31 +169,51 @@ const AdminDailyGames = () => {
       header: "Actions",
       cell: (info) => {
         const id = Number(info.getValue());
-        return deleteConfirmId === id ? (
-          <div className="flex gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => handleDeleteGame(id)}
-            >
-              Confirm
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDeleteConfirmId(null)}
-            >
-              Cancel
-            </Button>
+        const articleTitle = info.row.original.article_title;
+        const wikipediaUrl = `https://wikipedia.org/wiki/${encodeURIComponent(articleTitle)}`;
+
+        return (
+          <div className="flex gap-2 ">
+            {deleteConfirmId === id ? (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteGame(id)}
+                  title="Confirm Delete"
+                >
+                  Confirm
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDeleteConfirmId(null)}
+                  title="Cancel Delete"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open(wikipediaUrl, "_blank")}
+                  title="Visit Wikipedia article"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setDeleteConfirmId(id)}
+                  title="Delete Game"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
-        ) : (
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={() => setDeleteConfirmId(id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
         );
       },
     }),

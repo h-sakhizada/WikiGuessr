@@ -5,11 +5,10 @@ import { DataTable } from "@/components/ui/data-table";
 // Import the profiles type from database.types.ts
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Database } from "@/database.types";
 import { useAllProfiles } from "@/hooks/useAllProfiles";
+import { Profile } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import { Profile } from "@/types";
 
 export default function AdminUserManagement() {
   // State to hold user data
