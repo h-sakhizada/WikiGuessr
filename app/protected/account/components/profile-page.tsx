@@ -12,8 +12,8 @@ import { Camera, LineChart, PlusCircle, Zap } from "lucide-react";
 import { redirect } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import EditableInput from "../custom/EditableInput";
-import LoadingSpinner from "../loading-spinner";
+import EditableInput from "../../../../components/custom/EditableInput";
+import LoadingSpinner from "../../../../components/loading-spinner";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 

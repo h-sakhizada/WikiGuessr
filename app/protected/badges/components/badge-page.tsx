@@ -2,7 +2,7 @@
 import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
 import { Toaster } from "react-hot-toast";
-import LoadingSpinner from "../loading-spinner";
+import LoadingSpinner from "../../../../components/loading-spinner";
 
 export default function BadgeClientPage() {
   const user = useProfile();

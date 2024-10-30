@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import LoadingSpinner from "../loading-spinner";
 import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
 import { addVictory } from "@/actions/profile-actions";
 import Image from "next/image";
@@ -16,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import LoadingSpinner from "@/components/loading-spinner";
 
 interface InfoboxProps {
   info: Record<string, any>;
