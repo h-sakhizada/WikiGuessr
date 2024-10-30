@@ -1,22 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-
-import { getAllProfiles } from "@/actions/profile-actions";
 import { DataTable } from "@/components/ui/data-table";
 
 // Import the profiles type from database.types.ts
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Database } from "@/database.types";
 import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 
 // Define a type alias for the profile row
 type ProfileRow = Database["public"]["Tables"]["profile"]["Row"];
 
-export default function AdminClientPage() {
+export default function AdminUserManagement() {
   // State to hold user data
   const { data: profiles, isLoading } = useAllProfiles();
 
@@ -72,7 +69,7 @@ export default function AdminClientPage() {
 
   return (
     <div>
-      <h1>Admin Page</h1>
+      <h1>User Management</h1>
       <DataTable columns={columns} data={profiles} />
     </div>
   );
