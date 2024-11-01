@@ -94,13 +94,3 @@ export class FuzzyMatcher {
     return 1 - distance / maxLength;
   }
 }
-
-// Optional: Export a convenient standalone function
-export function fuzzyMatch(
-  guess: string,
-  correctAnswer: string,
-  options?: FuzzyMatchOptions
-): FuzzyMatchResult {
-  const matcher = new FuzzyMatcher();
-  return matcher.match(guess, correctAnswer, options);
-}
