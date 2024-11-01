@@ -9,6 +9,7 @@ import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { Profile } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 export default function AdminUserManagement() {
   // State to hold user data
@@ -66,6 +67,7 @@ export default function AdminUserManagement() {
 
   return (
     <div>
+      <Breadcrumb />
       <h1>User Management</h1>
       <DataTable columns={columns} data={profiles} />
     </div>

@@ -130,6 +130,14 @@ export default function DailyClientPage() {
   };
 
   const checkGuess = (): void => {
+    if (guess.trim().length === 0) {
+      toast.error("Please enter a guess!", {
+        iconTheme: { primary: "red", secondary: "white" },
+        duration: 1000,
+      });
+      return;
+    }
+
     if (currentHint > 5 || !article) {
       return;
     }
@@ -221,13 +229,12 @@ export default function DailyClientPage() {
               />
               <Button
                 variant="default"
-                size="lg"
+                size="default"
                 onClick={checkGuess}
                 disabled={currentHint > 5}
                 className="group"
               >
-                Guess
-                <Search className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+                <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
               </Button>
               {/* <Button
                 size="lg"

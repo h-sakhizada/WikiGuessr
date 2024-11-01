@@ -1,5 +1,6 @@
 "use client";
 
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 import {
   Card,
   CardDescription,
@@ -22,7 +23,8 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ links }: AdminDashboardProps) {
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <p className="text-gray-500 mt-2">
@@ -42,14 +44,14 @@ export function AdminDashboard({ links }: AdminDashboardProps) {
             >
               <Card
                 className={`h-full relative hover:shadow-md border-2 ${
-                  link.active ? "border-blue-200" : "border-gray-100"
+                  link.active ? "border-primary" : "border-gray-100"
                 }`}
               >
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <div
                       className={`p-2 rounded-lg ${
-                        link.active ? "bg-blue-100" : "bg-gray-100"
+                        link.active ? "bg-primary" : "bg-gray-50"
                       }`}
                     >
                       {link.icon}

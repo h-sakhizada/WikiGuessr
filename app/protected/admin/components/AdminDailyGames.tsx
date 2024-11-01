@@ -21,7 +21,9 @@ import {
   X,
   Edit,
   ExternalLink,
+  Plus,
 } from "lucide-react";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 interface EditState {
   [key: number]: {
@@ -272,7 +274,9 @@ const AdminDailyGames = () => {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div>
+      <Breadcrumb />
+
       <h1 className="text-2xl font-bold mb-6">Manage Daily Games</h1>
 
       {error && (
@@ -288,13 +292,13 @@ const AdminDailyGames = () => {
             value={newGameDate}
             onChange={(e) => setNewGameDate(e.target.value)}
             required
-            className="w-48"
+            className="w-36"
           />
           <Input
             type="text"
             value={newGameTitle}
             onChange={(e) => setNewGameTitle(e.target.value)}
-            placeholder="Wikipedia Article Title"
+            placeholder="Article Title"
             required
             className="flex-1"
           />
@@ -302,7 +306,7 @@ const AdminDailyGames = () => {
             {addGame.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Add Game"
+              <Plus className="h-4 w-4" />
             )}
           </Button>
         </div>
