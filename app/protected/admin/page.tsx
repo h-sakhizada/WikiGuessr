@@ -1,5 +1,5 @@
 // app/admin/page.tsx
-import { BarChart2, Gamepad, Settings, Users } from "lucide-react";
+import { BarChart2, Gamepad, Medal, Settings, Users } from "lucide-react";
 import { AdminDashboard } from "./components/AdminDashboard";
 export default async function AdminPage() {
   // You can fetch any data needed for the admin dashboard here
@@ -16,6 +16,13 @@ export default async function AdminPage() {
       description: "Manage upcoming daily games",
       href: "/protected/admin/daily",
       icon: <Gamepad className="text-black" />,
+      active: true,
+    },
+    {
+      title: "Badges",
+      description: "Manage user badges and achievements",
+      href: "/protected/admin/badges",
+      icon: <Medal className="text-black" />,
       active: true,
     },
     {
