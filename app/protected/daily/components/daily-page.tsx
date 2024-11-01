@@ -17,9 +17,20 @@ import {
 import { Lightbulb, Search, RefreshCw, ExternalLink } from "lucide-react";
 import LoadingSpinner from "@/components/loading-spinner";
 import useDailyGame from "@/hooks/useDailyGame";
+import { FuzzyMatcher } from "@/lib/FuzzyMatcher";
 
 interface InfoboxProps {
   info: Record<string, any>;
+}
+
+interface GuessResult {
+  isMatch: boolean;
+  message: string;
+  type: "success" | "error";
+  iconTheme: {
+    primary: string;
+    secondary: string;
+  };
 }
 
 const WikipediaInfobox = ({ info }: InfoboxProps) => {
@@ -96,6 +107,8 @@ export default function DailyClientPage() {
   const [currentHint, setCurrentHint] = useState(1);
   const [guess, setGuess] = useState("");
 
+  const fuzzyMatcher = new FuzzyMatcher();
+
   if (user.isLoading || isLoading) {
     return <LoadingSpinner />;
   }
@@ -116,17 +129,73 @@ export default function DailyClientPage() {
     refetch();
   };
 
-  const checkGuess = () => {
-    if (article?.fullTitle === guess) {
-      toast.success("You got it!", {
-        iconTheme: { primary: "green", secondary: "white" },
+  const checkGuess = (): void => {
+    if (currentHint > 5 || !article) {
+      return;
+    }
+
+    const match = fuzzyMatcher.match(article.fullTitle, guess);
+
+    const getGuessResult = (similarity: number): GuessResult => {
+      // Exact or near-exact match
+      if (similarity === 1) {
+        return {
+          isMatch: true,
+          message: "You got it! Perfect match!",
+          type: "success",
+          iconTheme: { primary: "green", secondary: "white" },
+        };
+      }
+
+      if (similarity >= 0.95) {
+        return {
+          isMatch: true,
+          message: "You got it!",
+          type: "success",
+          iconTheme: { primary: "green", secondary: "white" },
+        };
+      }
+      // Close enough to count
+      if (similarity >= 0.8) {
+        return {
+          isMatch: true,
+          message: "Yeah, close enough! You got it!",
+          type: "success",
+          iconTheme: { primary: "green", secondary: "white" },
+        };
+      }
+      // Very close but not quite
+      if (similarity >= 0.2) {
+        return {
+          isMatch: false,
+          message: "Sooo close!",
+          type: "error",
+          iconTheme: { primary: "orange", secondary: "white" },
+        };
+      }
+      // Not close enough
+      return {
+        isMatch: false,
+        message: "Nope! Try again.",
+        type: "error",
+        iconTheme: { primary: "red", secondary: "white" },
+      };
+    };
+
+    const result = getGuessResult(match.similarity);
+
+    // Show appropriate toast
+    if (result.type === "success") {
+      toast.success(result.message, {
+        iconTheme: result.iconTheme,
       });
       setCurrentHint(6);
-      addVictory(article?.fullTitle);
+      addVictory(article.fullTitle);
     } else {
-      toast.error("Your hubris will be your undoing.", {
-        iconTheme: { primary: "red", secondary: "white" },
+      toast.error(result.message, {
+        iconTheme: result.iconTheme,
       });
+      setCurrentHint((prev) => prev + 1);
     }
   };
 
