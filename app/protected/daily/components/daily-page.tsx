@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { addVictory } from "@/actions/profile-actions";
+import { addRandomBadgeToUserCollection } from "@/actions/badge-actions";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,6 +200,14 @@ export default function DailyClientPage() {
       });
       setCurrentHint(6);
       addVictory(article.fullTitle);
+      toast.promise(addRandomBadgeToUserCollection(), {
+        loading: "Awarding Badge...",
+        success: (data) =>
+          data
+            ? "A new badge has been added to your profile!"
+            : "No available badges!",
+        error: "Error adding badge!",
+      });
     } else {
       toast.error(result.message, {
         iconTheme: result.iconTheme,
