@@ -40,13 +40,13 @@ const useRandomWikipediaArticle = () => {
         const articleTitle = getArticleTitle(randomArticle);
 
         const page = await wiki.page(articleTitle);
-        const [summary, links, info] = await Promise.all([
+        const [summary, related, info] = await Promise.all([
           page.summary(),
-          page.links(),
+          page.related(),
           page.infobox(),
         ]);
 
-        return formatWikiHints(summary, links, info);
+        return formatWikiHints(summary, related, info);
       } catch (error) {
         console.error("Error fetching random Wikipedia article:", error);
         throw error;

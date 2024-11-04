@@ -5,13 +5,11 @@ interface FuzzyMatchResult {
 
 interface FuzzyMatchOptions {
   threshold?: number;
-  caseSensitive?: boolean;
 }
 
 export class FuzzyMatcher {
   private defaultOptions: FuzzyMatchOptions = {
     threshold: 0.85,
-    caseSensitive: false,
   };
 
   /**
@@ -29,12 +27,16 @@ export class FuzzyMatcher {
     const finalOptions = { ...this.defaultOptions, ...options };
 
     // Normalize strings if case-insensitive
-    const normalizedGuess = finalOptions.caseSensitive
-      ? guess.trim()
-      : guess.toLowerCase().trim();
-    const normalizedAnswer = finalOptions.caseSensitive
-      ? correctAnswer.trim()
-      : correctAnswer.toLowerCase().trim();
+    const normalizedGuess = guess.toLowerCase().trim();
+
+    // remove all text between parentheses and normalize
+    const normalizedAnswer = correctAnswer
+      .replace(/ *\([^)]*\) */g, "") // remove parentheses content
+      .replace(/ *\[[^\]]*\] */g, "") // remove brackets content
+      .toLowerCase()
+      .trim();
+
+    console.log(normalizedAnswer);
 
     const similarity = this.calculateSimilarity(
       normalizedGuess,

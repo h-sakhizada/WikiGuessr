@@ -221,7 +221,7 @@ const AdminBadgeManagement = () => {
   } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Fetch badges
+  // Fetch badges TDO: split to custom hook
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ["badges"],
     queryFn: async () => {
@@ -234,7 +234,7 @@ const AdminBadgeManagement = () => {
     },
   });
 
-  // Upload mutation
+  // Upload mutation TODO: split to custom hook
   const uploadIcon = useMutation({
     mutationFn: async ({ file, badgeId }: { file: File; badgeId: string }) => {
       // First, delete the old icon if it exists
@@ -282,7 +282,7 @@ const AdminBadgeManagement = () => {
     },
   });
 
-  // Add badge mutation
+  // Add badge mutation TODO: split to custom hook
   const addBadge = useMutation({
     mutationFn: async (badgeData: Partial<Badge>) => {
       const { data, error } = await supabase
@@ -299,7 +299,7 @@ const AdminBadgeManagement = () => {
     },
   });
 
-  // Update badge mutation
+  // Update badge mutation TODO: split to custom hook
   const updateBadge = useMutation({
     mutationFn: async ({
       id,
@@ -320,7 +320,7 @@ const AdminBadgeManagement = () => {
     },
   });
 
-  // Delete badge mutation
+  // Delete badge mutation TODO: split to custom hook
   const deleteBadge = useMutation({
     mutationFn: async (id: string) => {
       const badge = badges.find((b) => b.id === id);

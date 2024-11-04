@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import useDailyGame from "@/hooks/useDailyGame";
 import { useProfile } from "@/hooks/useProfile";
+import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
 import { FuzzyMatcher } from "@/lib/FuzzyMatcher";
-import { ExternalLink, Lightbulb, Search } from "lucide-react";
+import { ExternalLink, Lightbulb, RefreshCw, Search } from "lucide-react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import React, { useState } from "react";
@@ -96,9 +97,14 @@ const formatHint3 = (hint3: string) => {
   }
 };
 
-export default function DailyClientPage() {
+export default function UnlimitedCLientPage() {
   const user = useProfile();
-  const { data: article, isLoading, error, refetch } = useDailyGame();
+  const {
+    data: article,
+    isLoading,
+    error,
+    refetch,
+  } = useRandomWikipediaArticle();
   const [currentHint, setCurrentHint] = useState(1);
   const [guess, setGuess] = useState("");
 
@@ -137,7 +143,7 @@ export default function DailyClientPage() {
       return;
     }
 
-    const match = fuzzyMatcher.match(guess, article.fullTitle);
+    const match = fuzzyMatcher.match(article.fullTitle, guess);
 
     const getGuessResult = (similarity: number): GuessResult => {
       // Exact or near-exact match
@@ -217,7 +223,7 @@ export default function DailyClientPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">
-              Daily Wikipedia Challenge
+              Unlimited Wikipedia Challenge
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -239,7 +245,7 @@ export default function DailyClientPage() {
               >
                 <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
               </Button>
-              {/* <Button
+              <Button
                 size="lg"
                 variant="secondary"
                 onClick={resetHints}
@@ -247,7 +253,7 @@ export default function DailyClientPage() {
               >
                 New Article
                 <RefreshCw className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
-              </Button> */}
+              </Button>
             </div>
           </CardContent>
         </Card>
