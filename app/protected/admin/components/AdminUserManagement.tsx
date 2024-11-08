@@ -8,7 +8,7 @@ import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { Profile } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
-import { deleteProfile } from "@/actions/profile-actions";
+import { deleteProfile, togglePremium } from "@/actions/profile-actions";
 import { Loader2, Trash2, ArrowUpDown } from "lucide-react";
 
 const AdminUserManagement = () => {
@@ -27,6 +27,16 @@ const AdminUserManagement = () => {
       setConfirmDeleteId(null);
     } else {
       console.error("Failed to delete user");
+    }
+  };
+
+  const handleTogglePremium = async (userId: string, isPremium: boolean) => {
+    const success = await togglePremium(userId, isPremium);
+    if (success) {
+      refetch(); // Refresh the profiles to show updated status
+      console.log("Profile premium status updated");
+    } else {
+      console.error("Failed to update premium status");
     }
   };
 
@@ -108,7 +118,17 @@ const AdminUserManagement = () => {
     },
     {
       accessorKey: "is_premium",
-      header: "Is Premium",
+      header: "Premium Status",
+      cell: ({ row }) => (
+        <Button
+          variant={row.original.is_premium ? "destructive" : "primary"}
+          onClick={() =>
+            handleTogglePremium(row.original.id, row.original.is_premium)
+          }
+        >
+          {row.original.is_premium ? "Unset Premium" : "Set Premium"}
+        </Button>
+      ),
     },
     {
       accessorKey: "actions",
@@ -153,7 +173,6 @@ const AdminUserManagement = () => {
     <div>
       <Breadcrumb />
       <h1>User Management</h1>
-      <DataTable columns={columns} data={profiles} />
 
       {selectedProfileIds.length > 0 && (
         confirmDeleteSelected ? (
@@ -182,8 +201,9 @@ const AdminUserManagement = () => {
         )
       )}
 
+      <DataTable columns={columns} data={profiles} />
     </div>
   );
-}
+};
 
 export default AdminUserManagement;

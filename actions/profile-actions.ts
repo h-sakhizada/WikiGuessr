@@ -92,6 +92,9 @@ export async function editProfile(profile: Profile): Promise<Profile> {
 //  Helper actions to modify specific columns in the profile table.
 //------------------------------------------------------------------------------------------
 
+// Premium / Free Helper Methods
+//-------------------------------------------------------
+
 export async function setProfileToPremium(uuid?: string): Promise<void> {
   const supabase = createClient();
 
@@ -138,6 +141,25 @@ export async function setProfileToFree(uuid?: string): Promise<void> {
   }
 }
 
+export async function togglePremium(uuid: string, isPremium: boolean): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("profile")
+    .update({ is_premium: !isPremium })  // Toggle the premium status
+    .eq("id", uuid);
+
+  if (error) {
+    console.error("Error updating premium status:", error);
+    return false;
+  }
+
+  return true;
+}
+
+
+// Victory Helper Methods
+//-------------------------------------------------------
 export async function getVictories(uuid?: string): Promise<[]> {
   const supabase = createClient();
 
