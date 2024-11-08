@@ -5,8 +5,8 @@ export default async function AdminPage() {
   // You can fetch any data needed for the admin dashboard here
   const adminLinks = [
     {
-      title: "Users",
-      description: "Manage user accounts and permissions",
+      title: "Profiles",
+      description: "Manage user profiles and permissions",
       href: "/protected/admin/users",
       icon: <Users className="text-black" />,
       active: true,
