@@ -74,11 +74,7 @@ const AdminUserManagement = () => {
             selectedProfileIds.length ===
             profiles.filter((profile) => !profile.is_admin).length
           }
-          indeterminate={
-            selectedProfileIds.length > 0 &&
-            selectedProfileIds.length <
-              profiles.filter((profile) => !profile.is_admin).length
-          }
+
           onCheckedChange={(checked) => toggleSelectAll(!!checked)}
           aria-label="Select all"
         />
@@ -157,7 +153,6 @@ const AdminUserManagement = () => {
     <div>
       <Breadcrumb />
       <h1>User Management</h1>
-      
       <DataTable columns={columns} data={profiles} />
 
       {selectedProfileIds.length > 0 && (
