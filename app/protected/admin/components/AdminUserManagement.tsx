@@ -50,7 +50,7 @@ const AdminUserManagement = () => {
 
     if (results.every((success) => success)) {
       refetch();
-      setSelectedProfileIds([]);  // Clear selected IDs after deletion
+      setSelectedProfileIds([]); // Clear selected IDs after deletion
       console.log("All selected non-admin users deleted successfully");
     } else {
       console.error("Failed to delete some users");
@@ -67,7 +67,9 @@ const AdminUserManagement = () => {
   };
 
   const toggleSelectRow = (id: string, checked: boolean) => {
-    const isSelectable = profiles.find((profile) => profile.id === id && !profile.is_admin);
+    const isSelectable = profiles.find(
+      (profile) => profile.id === id && !profile.is_admin
+    );
     setSelectedProfileIds((prevSelected) =>
       checked && isSelectable
         ? [...prevSelected, id]
@@ -84,7 +86,6 @@ const AdminUserManagement = () => {
             selectedProfileIds.length ===
             profiles.filter((profile) => !profile.is_admin).length
           }
-
           onCheckedChange={(checked) => toggleSelectAll(!!checked)}
           aria-label="Select all"
         />
@@ -92,7 +93,9 @@ const AdminUserManagement = () => {
       cell: ({ row }) => (
         <Checkbox
           checked={selectedProfileIds.includes(row.original.id)}
-          onCheckedChange={(checked) => toggleSelectRow(row.original.id, !!checked)}
+          onCheckedChange={(checked) =>
+            toggleSelectRow(row.original.id, !!checked)
+          }
           disabled={row.original.is_admin} // Disable checkbox if the user is an admin
           aria-label="Select row"
         />
@@ -121,7 +124,7 @@ const AdminUserManagement = () => {
       header: "Premium Status",
       cell: ({ row }) => (
         <Button
-          variant={row.original.is_premium ? "destructive" : "primary"}
+          variant={row.original.is_premium ? "destructive" : "default"}
           onClick={() =>
             handleTogglePremium(row.original.id, row.original.is_premium)
           }
@@ -174,13 +177,10 @@ const AdminUserManagement = () => {
       <Breadcrumb />
       <h1>User Management</h1>
 
-      {selectedProfileIds.length > 0 && (
-        confirmDeleteSelected ? (
+      {selectedProfileIds.length > 0 &&
+        (confirmDeleteSelected ? (
           <div className="flex space-x-2 mb-4">
-            <Button
-              variant="destructive"
-              onClick={handleDeleteSelectedUsers}
-            >
+            <Button variant="destructive" onClick={handleDeleteSelectedUsers}>
               Confirm Delete Selected ({selectedProfileIds.length})
             </Button>
             <Button
@@ -198,8 +198,7 @@ const AdminUserManagement = () => {
           >
             Delete Selected ({selectedProfileIds.length})
           </Button>
-        )
-      )}
+        ))}
 
       <DataTable columns={columns} data={profiles} />
     </div>
