@@ -2,6 +2,8 @@
 import { Profile } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
+//  Actions to perform CRUD operations on profiles in supabase.
+//------------------------------------------------------------------------------------------
 export async function getProfile(uuid?: string): Promise<Profile | null> {
   const supabase = createClient();
 
@@ -28,6 +30,49 @@ export async function getProfile(uuid?: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.from("profile").select("*");
+
+  if (error) {
+    console.error("Error fetching all profiles:", error);
+    throw error;
+  }
+
+  return data as Profile[];
+}
+
+export async function deleteProfile(uuid?: string): Promise<boolean> {
+  const supabase = createClient();
+
+  if (!uuid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uuid = user?.id;
+  }
+
+  if (!uuid) {
+    console.error("No UUID provided or found for the user.");
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("profile")
+    .delete()
+    .eq("id", uuid);
+
+  if (error) {
+    console.error("Error deleting profile:", error);
+    return false;
+  }
+
+  return true;
+}
+
+
 export async function editProfile(profile: Profile): Promise<Profile> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -42,6 +87,10 @@ export async function editProfile(profile: Profile): Promise<Profile> {
 
   return data as Profile;
 }
+
+
+//  Helper actions to modify specific columns in the profile table.
+//------------------------------------------------------------------------------------------
 
 export async function setProfileToPremium(uuid?: string): Promise<void> {
   const supabase = createClient();
@@ -142,15 +191,3 @@ export async function addVictory(
   }
 }
 
-export async function getAllProfiles(): Promise<Profile[]> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase.from("profile").select("*");
-
-  if (error) {
-    console.error("Error fetching all profiles:", error);
-    throw error;
-  }
-
-  return data as Profile[];
-}
