@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import LoadingSpinner from "../loading-spinner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LoadingSpinner from "@/components/loading-spinner";
 
 export default function ProtectedHomePage() {
   const user = useProfile();
@@ -47,12 +47,16 @@ export default function ProtectedHomePage() {
       link: "/protected/badges",
     },
     // Only include the Admin action if the user is an admin
-    ...(user.data.is_admin ? [{
-      title: "Admin",
-      icon: ShieldIcon,
-      color: "text-red-500",
-      link: "/protected/admin",
-    }] : []),
+    ...(user.data.is_admin
+      ? [
+          {
+            title: "Admin",
+            icon: ShieldIcon,
+            color: "text-red-500",
+            link: "/protected/admin",
+          },
+        ]
+      : []),
   ];
 
   return (

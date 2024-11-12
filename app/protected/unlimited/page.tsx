@@ -1,21 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import UnlimitedClientPage from "./components/unlimited-page";
 
 export default async function UnlimitedPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/sign-in");
-  }
-
-  return (
-    <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
-      <header className="text-center mb-2">
-        <h1 className="text-2xl font-bold">Unlimited Play Page</h1>
-      </header>
-    </div>
-  );
+  return <UnlimitedClientPage />;
 }
