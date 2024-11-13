@@ -132,7 +132,6 @@ export async function editProfile(profile: Profile): Promise<Profile> {
 
 // Premium / Free Helper Methods
 //-------------------------------------------------------
-
 export async function setProfileToPremium(uuid?: string): Promise<void> {
   const supabase = createClient();
 
@@ -146,7 +145,7 @@ export async function setProfileToPremium(uuid?: string): Promise<void> {
   if (!uuid) return;
 
   const { error } = await supabase
-    .from("profile")
+    .from("users")
     .update({ is_premium: true })
     .eq("id", uuid);
 
@@ -169,7 +168,7 @@ export async function setProfileToFree(uuid?: string): Promise<void> {
   if (!uuid) return;
 
   const { error } = await supabase
-    .from("profile")
+    .from("users")
     .update({ is_premium: false })
     .eq("id", uuid);
 
@@ -186,7 +185,7 @@ export async function togglePremium(
   const supabase = createClient();
 
   const { error } = await supabase
-    .from("profile")
+    .from("users")
     .update({ is_premium: !isPremium }) // Toggle the premium status
     .eq("id", uuid);
 
@@ -254,7 +253,6 @@ export async function addVictory(
 }
 
 // Badge_Profile helper function to change selected badge
-
 export async function setSelectedBadge(badgeId: string): Promise<void> {
   const supabase = createClient();
 

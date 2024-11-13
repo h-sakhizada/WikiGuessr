@@ -5,11 +5,13 @@ import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
-import { Profile } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import { deleteProfile, togglePremium } from "@/actions/profile-actions";
 import { Loader2, Trash2, ArrowUpDown } from "lucide-react";
+
+import { Profile } from "@/types";
+import { ProfileWithUser } from "@/hooks/useAllProfiles";
 
 const AdminUserManagement = () => {
   const { data: profiles, isLoading, refetch } = useAdminAllProfiles();
@@ -77,7 +79,7 @@ const AdminUserManagement = () => {
     );
   };
 
-  const columns: ColumnDef<Profile>[] = [
+  const columns: ColumnDef<ProfileWithUser>[] = [
     {
       id: "select",
       header: () => (
@@ -177,6 +179,8 @@ const AdminUserManagement = () => {
       <Breadcrumb />
       <h1>User Management</h1>
 
+      <DataTable columns={columns} data={profiles} />
+
       {selectedProfileIds.length > 0 &&
         (confirmDeleteSelected ? (
           <div className="flex space-x-2 mb-4">
@@ -199,8 +203,6 @@ const AdminUserManagement = () => {
             Delete Selected ({selectedProfileIds.length})
           </Button>
         ))}
-
-      <DataTable columns={columns} data={profiles} />
     </div>
   );
 };
