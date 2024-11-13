@@ -42,7 +42,7 @@ const AdminUserManagement = () => {
 
   const handleDeleteSelectedUsers = async () => {
     const nonAdminIds = selectedProfileIds.filter((id) =>
-      profiles.find((profile) => profile.user_id === id && !profile.is_admin)
+      profiles.find((profile) => profile.id === id && !profile.is_admin)
     );
 
     const deletePromises = nonAdminIds.map((id) => deleteProfile(id));

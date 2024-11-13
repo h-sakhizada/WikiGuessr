@@ -1,10 +1,12 @@
 "use server";
-import { Profile } from "@/types";
+import { Profile, User } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
 //  Actions to perform CRUD operations on profiles in supabase.
 //------------------------------------------------------------------------------------------
-export async function getProfile(uuid?: string): Promise<Profile | null> {
+export async function getUserAndProfile(
+  uuid?: string
+): Promise<Profile | null> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -40,17 +42,37 @@ export async function getProfile(uuid?: string): Promise<Profile | null> {
   return { ...profileData, ...userData };
 }
 
-export async function getAllProfiles(): Promise<Profile[]> {
+export async function getAllUsersAndProfiles(): Promise<(Profile & User)[]> {
   const supabase = createClient();
 
-  const { data, error } = await supabase.from("profile").select("*");
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*");
 
-  if (error) {
-    console.error("Error fetching all profiles:", error);
-    throw error;
+  if (profileError) {
+    console.error("Error fetching profiles:", profileError);
+    throw profileError;
   }
 
-  return data as Profile[];
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("*");
+
+  if (userError) {
+    console.error("Error fetching users:", userError);
+    throw userError;
+  }
+
+  // Merge the profile and user data based on user_id/id
+  const mergedData = profileData.map((profile) => {
+    const matchingUser = userData.find((user) => user.id === profile.user_id);
+    return {
+      ...profile,
+      ...matchingUser,
+    };
+  });
+
+  return mergedData as (Profile & User)[];
 }
 
 export async function deleteProfile(uuid?: string): Promise<boolean> {

@@ -1,14 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getProfile } from "@/actions/profile-actions";
+import { getUserAndProfile } from "@/actions/profile-actions";
 import { Profile } from "@/types";
 
 export function useProfile(uuid?: string) {
   return useQuery<Profile | null, Error>({
     queryKey: ["profile", uuid],
     queryFn: async () => {
-      const profile = await getProfile(uuid);
+      const profile = await getUserAndProfile(uuid);
       if (!profile) {
         console.log("No profile found for user:", uuid);
       }
