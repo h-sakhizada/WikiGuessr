@@ -90,7 +90,10 @@ export async function deleteProfile(uuid?: string): Promise<boolean> {
     return false;
   }
 
-  const { error } = await supabase.from("profile").delete().eq("id", uuid);
+  const { error } = await supabase
+    .from("profiles")
+    .delete()
+    .eq("user_id", uuid);
 
   if (error) {
     console.error("Error deleting profile:", error);
