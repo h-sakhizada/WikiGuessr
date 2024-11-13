@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAllProfiles } from "@/hooks/useAllProfiles";
+import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
 import { Profile } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
@@ -12,7 +12,7 @@ import { deleteProfile, togglePremium } from "@/actions/profile-actions";
 import { Loader2, Trash2, ArrowUpDown } from "lucide-react";
 
 const AdminUserManagement = () => {
-  const { data: profiles, isLoading, refetch } = useAllProfiles();
+  const { data: profiles, isLoading, refetch } = useAdminAllProfiles();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedProfileIds, setSelectedProfileIds] = useState<string[]>([]);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
@@ -42,7 +42,7 @@ const AdminUserManagement = () => {
 
   const handleDeleteSelectedUsers = async () => {
     const nonAdminIds = selectedProfileIds.filter((id) =>
-      profiles.find((profile) => profile.id === id && !profile.is_admin)
+      profiles.find((profile) => profile.user_id === id && !profile.is_admin)
     );
 
     const deletePromises = nonAdminIds.map((id) => deleteProfile(id));
