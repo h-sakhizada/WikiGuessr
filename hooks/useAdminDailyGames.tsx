@@ -28,7 +28,7 @@ export const useAdminDailyGames = () => {
       const today = startOfDay(new Date());
 
       const { data, error } = await supabase
-        .from("daily_game")
+        .from("daily_games")
         .select("*")
         .gte("day_of_game", format(today, "yyyy-MM-dd"))
         .order("day_of_game", { ascending: true });
@@ -41,7 +41,7 @@ export const useAdminDailyGames = () => {
   const addGame = useMutation({
     mutationFn: async (newGame: DailyGameInput) => {
       const { data, error } = await supabase
-        .from("daily_game")
+        .from("daily_games")
         .insert(newGame)
         .select()
         .single();
@@ -63,7 +63,7 @@ export const useAdminDailyGames = () => {
       game: Partial<DailyGameInput>;
     }) => {
       const { data, error } = await supabase
-        .from("daily_game")
+        .from("daily_games")
         .update(game)
         .eq("id", id)
         .select()
@@ -79,7 +79,10 @@ export const useAdminDailyGames = () => {
 
   const deleteGame = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from("daily_game").delete().eq("id", id);
+      const { error } = await supabase
+        .from("daily_games")
+        .delete()
+        .eq("id", id);
 
       if (error) throw error;
     },

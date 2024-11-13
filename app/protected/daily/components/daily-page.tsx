@@ -97,17 +97,17 @@ const formatHint3 = (hint3: string) => {
 };
 
 export default function DailyClientPage() {
-  const user = useProfile();
+  const profile = useProfile();
   const { data: article, isLoading, error, refetch } = useDailyGame();
   const [currentHint, setCurrentHint] = useState(1);
   const [guess, setGuess] = useState("");
 
   const fuzzyMatcher = new FuzzyMatcher();
 
-  if (user.isLoading || isLoading) {
+  if (profile.isLoading || isLoading) {
     return <LoadingSpinner />;
   }
-  if (!user.data) {
+  if (!profile.data) {
     return redirect("/sign-in");
   }
   if (error) {

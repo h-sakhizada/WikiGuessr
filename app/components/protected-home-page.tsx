@@ -21,8 +21,6 @@ export default function ProtectedHomePage() {
     return <LoadingSpinner />;
   }
 
-  console.log(user.data);
-
   if (!user.data) {
     return redirect("/sign-in");
   }
