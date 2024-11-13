@@ -105,9 +105,18 @@ export async function deleteProfile(uuid?: string): Promise<boolean> {
 
 export async function editProfile(profile: Profile): Promise<Profile> {
   const supabase = createClient();
+
+  // Only include the fields that are present in profiles table
+  const updateData = {
+    user_id: profile.user_id,
+    username: profile.username,
+    avatar: profile.avatar,
+    bio: profile.bio,
+  };
+
   const { data, error } = await supabase
-    .from("profile")
-    .upsert(profile)
+    .from("profiles")
+    .upsert(updateData)
     .single();
 
   if (error) {
