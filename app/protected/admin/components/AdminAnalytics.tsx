@@ -1,120 +1,106 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowUpDown } from "lucide-react";
-import Breadcrumb from "@/components/custom/Breadcrumbs";
-// import { useAnalyticsData } from "@/hooks/useAnalyticsData";  // Custom hook to fetch analytics data
-// import { AnalyticsData } from "@/types";  // Define your data type
-import { ColumnDef } from "@tanstack/react-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import UserAnalyticsOverview from "../analytics/components/overview";
+import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
+import { useAllGameResults } from "@/hooks/useAllGames";
+import { useAllBadges } from "@/hooks/useAllBadges";
+import { useAllExtraGames } from "@/hooks/useAllExtraGames";
+import { Progress } from "@/components/ui/progress";
+
+/**
+ * number of of wins / losses
+ * attempts statistics
+ *
+ * number of badges
+ */
 
 const AdminAnalyticsManagement = () => {
-  // const { data: analytics, isLoading, refetch } = useAnalyticsData();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+  const { data: profiles } = useAdminAllProfiles();
+  const { data: games } = useAllGameResults();
+  const { data: badges } = useAllBadges();
+  const { data: extraGames } = useAllExtraGames();
 
-  // useEffect(() => {
-  //   if (analytics) {
-  //     console.log("Analytics data loaded", analytics);
-  //   }
-  // }, [analytics]);
+  const totalUsers = profiles != null ? profiles.length : 0;
+  const premiumUsers =
+    profiles != null
+      ? profiles.filter((profile) => profile.is_premium).length
+      : 0;
+  const nonPremiumUsers = totalUsers - premiumUsers;
+  const premiumPercentage =
+    totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : 0;
+  
 
-  // if (isLoading) return <div>Loading...</div>;
-  // if (!analytics) return <div>No analytics data available</div>;
+  const dailyGames = (games?.length || 0);
+  const unlimitedGames = (extraGames?.length || 0); 
+  const totalGames = dailyGames + unlimitedGames;
 
-  // const toggleSelectAll = (checked: boolean) => {
-  //   const allIds = analytics.map((item) => item.id);
-  //   setSelectedIds(checked ? allIds : []);
-  // };
-
-  const toggleSelectRow = (id: string, checked: boolean) => {
-    setSelectedIds((prevSelected) =>
-      checked ? [...prevSelected, id] : prevSelected.filter((selectedId) => selectedId !== id)
-    );
-  };
-
-  // const columns: ColumnDef<AnalyticsData>[] = [
-  //   {
-  //     id: "select",
-  //     header: () => (
-  //       <Checkbox
-  //         // checked={selectedIds.length === analytics.length}
-  //         onCheckedChange={(checked) => toggleSelectAll(!!checked)}
-  //         aria-label="Select all"
-  //       />
-  //     ),
-  //     cell: ({ row }) => (
-  //       <Checkbox
-  //         checked={selectedIds.includes(row.original.id)}
-  //         onCheckedChange={(checked) => toggleSelectRow(row.original.id, !!checked)}
-  //         aria-label="Select row"
-  //       />
-  //     ),
-  //     enableSorting: false,
-  //     enableHiding: false,
-  //   },
-  //   {
-  //     accessorKey: "metric_name",
-  //     header: ({ column }) => (
-  //       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-  //         Metric Name
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     ),
-  //   },
-  //   {
-  //     accessorKey: "value",
-  //     header: "Value",
-  //   },
-  //   {
-  //     accessorKey: "date_range",
-  //     header: "Date Range",
-  //   },
-  //   {
-  //     accessorKey: "actions",
-  //     header: "Actions",
-  //     cell: ({ row }) => (
-  //       <div className="flex space-x-2">
-  //         <Button variant="secondary" size="sm" onClick={() => console.log("Viewing details for", row.original.id)}>
-  //           View Details
-  //         </Button>
-  //         <Button
-  //           variant="destructive"
-  //           size="sm"
-  //           onClick={() => setConfirmDelete(true)}
-  //         >
-  //           Delete
-  //         </Button>
-  //       </div>
-  //     ),
-  //   },
-  // ];
-
-  const handleDeleteSelectedItems = async () => {
-    // Handle delete selected analytics items logic
-    console.log("Deleting selected items: ", selectedIds);
-    setSelectedIds([]);
-    setConfirmDelete(false);
-  };
+  const totalBadges = badges != null ? badges?.length : 0;
 
   return (
     <div>
-      <Breadcrumb />
-      <h1>Analytics Dashboard</h1>
-      {/* <DataTable columns={columns} data={analytics} /> */}
-
-      {selectedIds.length > 0 && confirmDelete && (
-        <div className="flex space-x-2 mb-4">
-          <Button variant="destructive" onClick={handleDeleteSelectedItems}>
-            Confirm Delete Selected ({selectedIds.length})
-          </Button>
-          <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
-            Cancel
-          </Button>
-        </div>
-      )}
+      <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
+      <div>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    <div className="text-2xl font-bold">Users</div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2l font-bold">
+                    Total Users: {totalUsers}
+                  </div>
+                  <div className="text-2l font-bold">
+                    Number of Premium Users: {premiumUsers}
+                  </div>
+                  <div className="text-2l font-bold">
+                    Number of Non-premium Users: {nonPremiumUsers}
+                  </div>
+                  <br />
+                  <div>
+                    <div className="text-2l">Percentage of Premium Users</div>
+                    <Progress value={Number(premiumPercentage)} />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                  <div className="text-2xl font-bold">Games Played</div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2l font-bold">Total Daily Games Played: {dailyGames}</div>
+                  <div className="text-2l font-bold">Total Unlimited Games Played: {unlimitedGames}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Number of Badges Collected
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalBadges}</div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+        <UserAnalyticsOverview users={profiles || []} />
+      </div>
     </div>
   );
 };

@@ -7,7 +7,7 @@ export default async function AdminPage() {
     {
       title: "Profiles",
       description: "Manage user profiles and permissions",
-      href: "/protected/admin/users",
+      href: "/protected/admin/profiles",
       icon: <Users className="text-black" />,
       active: true,
     },

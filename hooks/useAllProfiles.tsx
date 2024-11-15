@@ -10,7 +10,7 @@ export const useAdminAllProfiles = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery<
-    ProfileWithUser[],
+    ProfileWithUser[] | null,
     Error
   >({
     queryKey: ["allProfiles"],

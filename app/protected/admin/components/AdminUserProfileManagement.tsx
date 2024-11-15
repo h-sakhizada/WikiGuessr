@@ -177,7 +177,7 @@ const AdminUserManagement = () => {
   return (
     <div>
       <Breadcrumb />
-      <h1>User Management</h1>
+      <h1 className="text-2xl font-bold mb-6">User Profile Management</h1>
 
       <DataTable columns={columns} data={profiles} />
 
