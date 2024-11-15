@@ -30,7 +30,7 @@ export default async function AdminPage() {
       description: "View site statistics and reports",
       href: "/protected/admin/analytics",
       icon: <BarChart2 className="text-black" />,
-      active: false,
+      active: true,
     },
     {
       title: "Settings",
