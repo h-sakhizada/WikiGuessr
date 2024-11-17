@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useProfileSelectedBadges } from "@/hooks/useProfileBadge";
 import { Profile } from "@/types";
-import { Camera, LineChart, PlusCircle, Zap } from "lucide-react";
+import { Camera, LineChart, MessageCircleQuestion, PlusCircle, Zap } from "lucide-react";
 import { redirect } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -253,6 +253,13 @@ export default function ProfileClientPage() {
               Go Premium
             </>
           )}
+        </Button>
+        <Button
+          className="flex-2"
+          onClick={() => (window.location.href = "/protected/how-to-upgrade")}
+        >
+          <MessageCircleQuestion className="h-4 w-4 mr-2" />
+          How to Upgrade
         </Button>
       </div>
     </div>

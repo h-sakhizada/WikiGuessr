@@ -1,14 +1,20 @@
+"use client";
+import LoadingSpinner from "@/components/loading-spinner";
+import { useProfile } from "@/hooks/useProfile";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function StatisticsPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function StatisticsPage() {
+  const { data: user, isLoading, refetch } = useProfile();
 
-  if (!user) {
-    return redirect("/sign-in");
+  if (isLoading) return <LoadingSpinner />;
+  if (!user) return redirect("/sign-in");
+
+  const VictoryString = () =>
+  {
+    var output = "";
+    user.victories?.map((vic) => output += ("" + vic + ", "));
+    return output;
   }
 
   return (
@@ -41,7 +47,7 @@ export default async function StatisticsPage() {
             All-Time Highest Score
           </label>
           <p className="w-24 truncate text-lg border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md">
-            N/A
+            {user.victories?.length == null ? "N/A" : user.victories?.length}
           </p>
         </div>
       </div>
@@ -51,7 +57,7 @@ export default async function StatisticsPage() {
           Victories
         </label>
         <p className="flex-grow text-lg border-2 border-black dark:border-white bg-transparent text-gray-800 dark:text-gray-200 p-2 rounded-md">
-          TEMP
+          {user.victories?.toString() == null ? "No Victories? Play a Game Already" : VictoryString()}
         </p>
       </div>
     </div>
