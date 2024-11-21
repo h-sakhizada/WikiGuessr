@@ -110,6 +110,28 @@ export const GameResultDialog = ({
   scoreBreakdown,
 }: GameResultDialogProps) => {
   const stats = isDaily ? dummyDailyStats : dummyUnlimitedStats;
+  const [timeUntilMidnight, setTimeUntilMidnight] = React.useState<{
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({ hours: 0, minutes: 0, seconds: 0 });
+
+  setInterval(() => {
+    const now = new Date();
+    const midnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      0,
+      0,
+      0
+    );
+    const timeLeft = midnight.getTime() - now.getTime();
+    const hours = Math.floor(timeLeft / 1000 / 60 / 60);
+    const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
+    const seconds = Math.floor((timeLeft / 1000) % 60);
+    setTimeUntilMidnight({ hours, minutes, seconds });
+  }, 1000);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -212,26 +234,6 @@ export const GameResultDialog = ({
         </div>
 
         <div className="flex gap-2 justify-center mt-6">
-          {/* <Button onClick={onClose} variant="secondary" className="group">
-            Close
-          </Button> */}
-          {/* {isDaily && (
-            <Button
-              onClick={() => {
-                // Implement share functionality
-                const shareText = `WikiGuesser Daily Challenge\n${
-                  isVictory
-                    ? `Got it in ${numberOfGuesses} guesses!\nFinal Score: ${scoreBreakdown?.finalScore || 0}`
-                    : "Better luck next time!"
-                }\nPlay at: wikiguesser.com`;
-                navigator.clipboard.writeText(shareText);
-              }}
-              className="group"
-            >
-              Share
-              <Share2 className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-            </Button>
-          )} */}
           <Button
             onClick={() => window.open(article.url, "_blank")}
             variant="outline"
@@ -246,7 +248,10 @@ export const GameResultDialog = ({
           <div className="text-center text-sm text-muted-foreground mt-4">
             <Timer className="inline-block mr-2 h-4 w-4" />
             Next daily challenge in:{" "}
-            <span className="font-semibold">12:34:56</span>
+            <span className="font-semibold w-16">
+              {timeUntilMidnight.hours}h {timeUntilMidnight.minutes}m{" "}
+              {timeUntilMidnight.seconds}s
+            </span>
           </div>
         )}
       </DialogContent>

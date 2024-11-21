@@ -1,4 +1,5 @@
 "use client";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 import Game from "@/components/custom/Game";
 import LoadingSpinner from "@/components/loading-spinner";
 import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
@@ -39,11 +40,14 @@ export default function UnlimitedClientPage() {
   }
 
   return (
-    <Game
-      article={article}
-      refetchArticle={refetch}
-      isUnlimited={true}
-      title="Unlimited Wikipedia Challenge"
-    />
+    <>
+      <Breadcrumb />
+      <Game
+        article={article}
+        refetchArticle={refetch}
+        isUnlimited={true}
+        title="Unlimited Wikipedia Challenge"
+      />
+    </>
   );
 }

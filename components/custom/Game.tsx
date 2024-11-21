@@ -221,7 +221,7 @@ export default function Game(props: GameProps) {
         isOpen={showResult}
         onClose={() => setShowResult(false)}
         isVictory={isVictory}
-        numberOfGuesses={currentHint}
+        numberOfGuesses={incorrectGuesses + 1}
         isDaily={!props.isUnlimited}
         article={{
           fullTitle: props.article?.fullTitle || "",
@@ -370,7 +370,7 @@ export default function Game(props: GameProps) {
               onClick={showNextHint}
               className="group flex items-center gap-2"
               variant="secondary"
-              disabled={currentScore === 0}
+              disabled={currentScore <= 20}
             >
               Show Next Hint
               <Lightbulb className="h-4 w-4 group-hover:text-yellow-400 transition-colors" />

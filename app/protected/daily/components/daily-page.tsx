@@ -1,4 +1,5 @@
 "use client";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 import Game from "@/components/custom/Game";
 import LoadingSpinner from "@/components/loading-spinner";
 import useDailyGame from "@/hooks/useDailyGame";
@@ -19,11 +20,14 @@ export default function DailyClientPage() {
   }
 
   return (
-    <Game
-      article={article}
-      refetchArticle={refetch}
-      isUnlimited={false}
-      title="Daily Wikipedia Challenge"
-    />
+    <>
+      <Breadcrumb />
+      <Game
+        article={article}
+        refetchArticle={refetch}
+        isUnlimited={false}
+        title="Daily Wikipedia Challenge"
+      />
+    </>
   );
 }
