@@ -197,7 +197,7 @@ export default function Game(props: GameProps) {
           </HintSection>
 
           <HintSection title="Image" isVisible={currentHint >= 2}>
-            {props.article?.hint2 && (
+            {props.article?.hint2 ? (
               <div className="flex justify-center">
                 <Image
                   src={props.article.hint2}
@@ -207,6 +207,10 @@ export default function Game(props: GameProps) {
                   className="rounded-lg object-cover"
                 />
               </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">
+                No image available for this article. This one's a toughie! 🤔
+              </p>
             )}
           </HintSection>
 
@@ -214,15 +218,13 @@ export default function Game(props: GameProps) {
             title="Additional Information"
             isVisible={currentHint >= 3}
           >
-            {props.article?.hint3 && formatHint3(props.article.hint3)}
+            {props.article?.hint3 && formatInfoBox(props.article.hint3)}
           </HintSection>
 
           <HintSection title="More Related Links" isVisible={currentHint >= 4}>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              {props.article?.hint4.map((link, index) => (
-                <li key={index}>{link}</li>
-              ))}
-            </ul>{" "}
+              {props.article?.hint4.map((link) => <li key={link}>{link}</li>)}
+            </ul>
           </HintSection>
 
           <HintSection title="Summary" isVisible={currentHint >= 5}>
@@ -268,13 +270,15 @@ export default function Game(props: GameProps) {
           </div>
         </div>
 
-        <section className="bg-secondary/10 rounded-lg p-8 mt-12">
-          <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
-          <p className="text-lg text-muted-foreground">
-            Get up to 5 hints to guess today's Wikipedia article. The fewer
-            hints you need, the better! New challenge every day.
-          </p>
-        </section>
+        {currentHint === 1 && (
+          <section className="bg-secondary/10 rounded-lg p-8 mt-12">
+            <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
+            <p className="text-lg text-muted-foreground">
+              Get up to 5 hints to guess today's Wikipedia article. The fewer
+              hints you need, the better! New challenge every day.
+            </p>
+          </section>
+        )}
       </main>
     </div>
   );
@@ -341,12 +345,35 @@ const WikipediaInfobox = ({ info }: InfoboxProps) => {
   );
 };
 
-const formatHint3 = (hint3: string) => {
+const formatInfoBox = (hint3: string) => {
   try {
+    if (!hint3) {
+      return (
+        <p className="text-muted-foreground text-center py-4">
+          Uh oh! Looks like there's no additional data for this article. You're
+          on your own for this one! 🎲
+        </p>
+      );
+    }
+
     const info = JSON.parse(hint3);
+    if (Object.keys(info).length === 0) {
+      return (
+        <p className="text-muted-foreground text-center py-4">
+          Uh oh! Looks like there's no additional data for this article. You're
+          on your own for this one! 🎲
+        </p>
+      );
+    }
+
     return <WikipediaInfobox info={info} />;
   } catch (error) {
     console.error("Error parsing hint3:", error);
-    return <p>{hint3}</p>;
+    return (
+      <p className="text-muted-foreground text-center py-4">
+        Uh oh! Looks like there's no additional data for this article. You're on
+        your own for this one! 🎲
+      </p>
+    );
   }
 };
