@@ -22,14 +22,15 @@ export const createTitleRedactor = (title: string) => {
 };
 
 export const formatRelated = (
+  title: string,
   related: relatedResult,
   from: number,
   to: number
 ): string[] => {
-  // return the first 5 related links
+  const redactTitle = createTitleRedactor(title);
   return related.pages
     .slice(from, to)
-    .map((page) => page.title.split("_").join(" "));
+    .map((page) => redactTitle(page.title.split("_").join(" ")));
 };
 
 export const formatTitleInitials = (title: string): string => {
@@ -68,10 +69,10 @@ export const formatWikiHints = (
   const redactTitle = createTitleRedactor(summary.title);
 
   return {
-    hint1: formatRelated(related, 0, 5),
+    hint1: formatRelated(summary.title, related, 0, 5),
     hint2: summary.thumbnail?.source || null,
     hint3: formatInfobox(info, redactTitle),
-    hint4: formatRelated(related, 5, 10),
+    hint4: formatRelated(summary.title, related, 5, 10),
     hint5: redactTitle(summary.extract),
     fullTitle: summary.title,
     url: getWikiArticleUrl(summary.title),

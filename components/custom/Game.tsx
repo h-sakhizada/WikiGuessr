@@ -1,24 +1,18 @@
+import { addRandomBadgeToUserCollection } from "@/actions/badge-actions";
+import { addVictory } from "@/actions/profile-actions";
 import { useProfile } from "@/hooks/useProfile";
 import { FuzzyMatcher } from "@/lib/FuzzyMatcher";
 import { WikiArticleHints } from "@/utils/wiki_utils";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
-import { useState } from "react";
-import LoadingSpinner from "../loading-spinner";
-import { redirect } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
-import { addVictory } from "@/actions/profile-actions";
-import { addRandomBadgeToUserCollection } from "@/actions/badge-actions";
-import {
-  Search,
-  Lightbulb,
-  ExternalLink,
-  RefreshCw,
-  Trophy,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Flag, Lightbulb, RefreshCw, Search, Trophy } from "lucide-react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
+import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import LoadingSpinner from "../loading-spinner";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
 import { GameResultDialog } from "./GameResultDialog";
 
 interface GameProps {
@@ -61,7 +55,6 @@ export default function Game(props: GameProps) {
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown | null>(
     null
   );
-
   const fuzzyMatcher = new FuzzyMatcher();
 
   if (profile.isLoading) {
@@ -78,7 +71,7 @@ export default function Game(props: GameProps) {
   ): ScoreBreakdown => {
     const baseScore = 100;
     const hintPenalty = Math.max(0, (hintsUsed - 1) * 20);
-    const guessPenalty = incorrectAttempts * 20;
+    const guessPenalty = incorrectAttempts * 10;
     const remainingScore = Math.max(0, baseScore - hintPenalty - guessPenalty);
     const finalScore = Math.round(remainingScore * similarity);
 
@@ -91,10 +84,23 @@ export default function Game(props: GameProps) {
     };
   };
 
+  const endGame = (isWin: boolean, scoreValue: number = 0) => {
+    setCurrentHint(6);
+    setIsVictory(isWin);
+    setShowResult(true);
+    setFinalScore(scoreValue);
+    setScoreBreakdown(null);
+  };
+
   const showNextHint = () => {
-    if (currentHint < 6) {
+    if (currentHint < 5) {
+      const newScore = Math.max(0, currentScore - 20);
+      setCurrentScore(newScore);
       setCurrentHint((prev) => Math.min(prev + 1, 6));
-      setCurrentScore((prev) => Math.max(0, prev - 20));
+
+      if (newScore === 0) {
+        endGame(false);
+      }
     }
   };
 
@@ -107,7 +113,6 @@ export default function Game(props: GameProps) {
     setScoreBreakdown(null);
     props.refetchArticle();
   };
-
   const checkGuess = (): void => {
     if (guess.trim().length === 0) {
       toast.error("Please enter a guess!", {
@@ -187,18 +192,26 @@ export default function Game(props: GameProps) {
       }
     } else {
       setIncorrectGuesses((prev) => prev + 1);
-      setCurrentScore((prev) => Math.max(0, prev - 20));
+      const newScore = Math.max(0, currentScore - 10);
+      setCurrentScore(newScore);
+
+      if (newScore === 0) {
+        endGame(false);
+        return;
+      }
+
       toast.error(result.message, {
         iconTheme: result.iconTheme,
       });
+
       if (currentHint === 5) {
-        setCurrentHint(6);
-        setIsVictory(false);
-        setShowResult(true);
-        setFinalScore(0);
-        setScoreBreakdown(null);
+        endGame(false);
       }
     }
+  };
+
+  const handleGiveUp = () => {
+    endGame(false);
   };
 
   return (
@@ -217,7 +230,7 @@ export default function Game(props: GameProps) {
         victoryMessage={victoryMessage}
         scoreBreakdown={scoreBreakdown}
       />
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container sm:mx-auto sm:px-4 py-8 px-0 ">
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">
@@ -255,11 +268,11 @@ export default function Game(props: GameProps) {
                       checkGuess();
                     }
                   }}
+                  disabled={currentScore === 0 || currentHint === 6}
                 />
                 {isVictory || currentHint === 6 ? (
-                  // show victory modal
                   <Button
-                    variant="default"
+                    variant="secondary"
                     size="default"
                     onClick={() => setShowResult(true)}
                     className="group"
@@ -268,10 +281,10 @@ export default function Game(props: GameProps) {
                   </Button>
                 ) : (
                   <Button
-                    variant="default"
+                    variant="secondary"
                     size="default"
                     onClick={checkGuess}
-                    disabled={currentHint > 5}
+                    disabled={currentHint > 5 || currentScore === 0}
                     className="group"
                   >
                     <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
@@ -338,37 +351,42 @@ export default function Game(props: GameProps) {
               {props.article?.hint5}
             </p>
           </HintSection>
-
-          <HintSection title="Answer" isVisible={currentHint >= 6}>
-            <p className="text-lg">
-              The answer was:{" "}
-              <span className="font-medium">{props.article?.fullTitle}</span>
-            </p>
-          </HintSection>
         </div>
 
-        {currentHint < 6 && (
-          <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-4">
+          {currentHint === 5 ? (
+            <Button
+              size="lg"
+              onClick={handleGiveUp}
+              className="group flex items-center gap-2"
+              variant="destructive"
+            >
+              Give Up
+              <Flag className="h-4 w-4 group-hover:scale-110 transition-transform" />
+            </Button>
+          ) : (
             <Button
               size="lg"
               onClick={showNextHint}
               className="group flex items-center gap-2"
               variant="secondary"
+              disabled={currentScore === 0}
             >
               Show Next Hint
               <Lightbulb className="h-4 w-4 group-hover:text-yellow-400 transition-colors" />
               <span className="text-sm text-red-500">-20 points</span>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
 
         {currentHint === 1 && (
           <section className="bg-secondary/10 rounded-lg p-8 mt-12">
             <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
             <p className="text-lg text-muted-foreground">
               Get up to 5 hints to guess today's Wikipedia article. The fewer
-              hints you need, the better! Each hint or wrong guess costs 20
-              points. Start with 100 points and try to keep your score high!
+              hints you need, the better! Each hint costs 20 points and each
+              wrong guess costs 10 points. Start with 100 points and try to keep
+              your score high! The game ends if your score reaches 0.
             </p>
           </section>
         )}

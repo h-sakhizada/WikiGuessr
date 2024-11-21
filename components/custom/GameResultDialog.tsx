@@ -177,7 +177,7 @@ export const GameResultDialog = ({
               )}
               {scoreBreakdown.guessPenalty > 0 && (
                 <ScoreItem
-                  label={`Wrong Guesses (${scoreBreakdown.guessPenalty / 20})`}
+                  label={`Wrong Guesses (${scoreBreakdown.guessPenalty / 10})`}
                   value={`-${scoreBreakdown.guessPenalty}`}
                   icon={<XCircle className="h-4 w-4" />}
                   color="text-red-500"
@@ -212,10 +212,10 @@ export const GameResultDialog = ({
         </div>
 
         <div className="flex gap-2 justify-center mt-6">
-          <Button onClick={onClose} variant="secondary" className="group">
+          {/* <Button onClick={onClose} variant="secondary" className="group">
             Close
-          </Button>
-          {isDaily && (
+          </Button> */}
+          {/* {isDaily && (
             <Button
               onClick={() => {
                 // Implement share functionality
@@ -231,7 +231,7 @@ export const GameResultDialog = ({
               Share
               <Share2 className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
             </Button>
-          )}
+          )} */}
           <Button
             onClick={() => window.open(article.url, "_blank")}
             variant="outline"
