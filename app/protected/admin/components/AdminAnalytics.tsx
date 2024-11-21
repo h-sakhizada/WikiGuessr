@@ -15,6 +15,7 @@ import { useAllGameResults } from "@/hooks/useAllGames";
 import { useAllBadges } from "@/hooks/useAllBadges";
 import { useAllExtraGames } from "@/hooks/useAllExtraGames";
 import { Progress } from "@/components/ui/progress";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 /**
  * number of of wins / losses
@@ -37,16 +38,16 @@ const AdminAnalyticsManagement = () => {
   const nonPremiumUsers = totalUsers - premiumUsers;
   const premiumPercentage =
     totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : 0;
-  
 
-  const dailyGames = (games?.length || 0);
-  const unlimitedGames = (extraGames?.length || 0); 
+  const dailyGames = games?.length || 0;
+  const unlimitedGames = extraGames?.length || 0;
   const totalGames = dailyGames + unlimitedGames;
 
   const totalBadges = badges != null ? badges?.length : 0;
 
   return (
-    <div>
+    <>
+      <Breadcrumb />
       <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
       <div>
         <Tabs defaultValue="overview" className="space-y-4">
@@ -78,12 +79,16 @@ const AdminAnalyticsManagement = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                  <div className="text-2xl font-bold">Games Played</div>
+                    <div className="text-2xl font-bold">Games Played</div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2l font-bold">Total Daily Games Played: {dailyGames}</div>
-                  <div className="text-2l font-bold">Total Unlimited Games Played: {unlimitedGames}</div>
+                  <div className="text-2l font-bold">
+                    Total Daily Games Played: {dailyGames}
+                  </div>
+                  <div className="text-2l font-bold">
+                    Total Unlimited Games Played: {unlimitedGames}
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -101,7 +106,7 @@ const AdminAnalyticsManagement = () => {
         </Tabs>
         <UserAnalyticsOverview users={profiles || []} />
       </div>
-    </div>
+    </>
   );
 };
 

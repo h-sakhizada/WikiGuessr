@@ -12,7 +12,6 @@ export const useAllBadges = () => {
     queryFn: async () => {
       const badges = await getAllBadges();
       if (!badges || badges.length === 0) {
-        console.log("No badges found");
         return null;
       }
       return badges;

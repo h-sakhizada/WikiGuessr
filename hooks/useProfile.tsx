@@ -10,7 +10,7 @@ export function useProfile(uuid?: string) {
     queryFn: async () => {
       const profile = await getUserAndProfile(uuid);
       if (!profile) {
-        console.log("No profile found for user:", uuid);
+        return null;
       }
       return profile;
     },

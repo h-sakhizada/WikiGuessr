@@ -27,8 +27,6 @@ const useDailyGame = () => {
           .single();
 
         if (error) {
-          console.log("Error in daily game hook: ");
-          console.log(error);
           throw error;
         }
         if (!dailyGame) throw new Error("No game found for today");

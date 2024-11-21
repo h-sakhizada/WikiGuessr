@@ -17,7 +17,7 @@ export const useAdminAllProfiles = () => {
     queryFn: async () => {
       const profiles = await getAllUsersAndProfiles();
       if (!profiles || profiles.length === 0) {
-        console.log("No profiles found");
+        return null;
       }
       return profiles;
     },
