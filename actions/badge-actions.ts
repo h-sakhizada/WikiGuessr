@@ -104,13 +104,15 @@ export async function addRandomBadgeToUserCollection(
 
   let badgePool = await getAllBadges();
 
-  if (!badgePool || badgePool.length === 0) return false;
+  if (!badgePool || badgePool.length === 0)
+    return Promise.reject(new Error("No badges available"));
 
   if (userBadges && userBadges.length > 0) {
     badgePool = badgePool.filter(
       (badge) => !userBadges.some((userBadge) => userBadge.id === badge.id)
     );
-    if (!badgePool || badgePool.length === 0) return false;
+    if (!badgePool || badgePool.length === 0)
+      return Promise.reject(new Error("No new badges available"));
   }
 
   const awardedBadgeId =
