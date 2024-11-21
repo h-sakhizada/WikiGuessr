@@ -36,7 +36,6 @@ const AdminUserManagement = () => {
     const success = await togglePremium(userId, isPremium);
     if (success) {
       refetch(); // Refresh the profiles to show updated status
-      console.log("Profile premium status updated");
     } else {
       console.error("Failed to update premium status");
     }
@@ -53,7 +52,6 @@ const AdminUserManagement = () => {
     if (results.every((success) => success)) {
       refetch();
       setSelectedProfileIds([]); // Clear selected IDs after deletion
-      console.log("All selected non-admin users deleted successfully");
     } else {
       console.error("Failed to delete some users");
     }

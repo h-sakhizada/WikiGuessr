@@ -353,7 +353,7 @@ export default function Game(props: GameProps) {
           </HintSection>
         </div>
 
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center">
           {currentHint === 5 ? (
             <Button
               size="lg"
@@ -479,7 +479,6 @@ const formatInfoBox = (hint3: string) => {
 
     return <WikipediaInfobox info={info} />;
   } catch (error) {
-    console.error("Error parsing hint3:", error);
     return (
       <p className="text-muted-foreground text-center py-4">
         Uh oh! Looks like there's no additional data for this article. You're on

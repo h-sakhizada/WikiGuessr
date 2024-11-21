@@ -8,7 +8,7 @@ interface FuzzyMatchOptions {
 }
 
 export class FuzzyMatcher {
-  private defaultOptions: FuzzyMatchOptions = {
+  private readonly defaultOptions: FuzzyMatchOptions = {
     threshold: 0.85,
   };
 
@@ -35,8 +35,6 @@ export class FuzzyMatcher {
       .replace(/ *\[[^\]]*\] */g, "") // remove brackets content
       .toLowerCase()
       .trim();
-
-    console.log(normalizedAnswer);
 
     const similarity = this.calculateSimilarity(
       normalizedGuess,

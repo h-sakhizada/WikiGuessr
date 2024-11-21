@@ -94,7 +94,7 @@ export default function ProfileClientPage() {
                   .remove([`${profile.user_id}/${oldFilePath}`]);
               }
             } catch (error) {
-              console.log("No old file to delete or error deleting:", error);
+              console.error("No old file to delete or error deleting:", error);
             }
           }
 
@@ -158,7 +158,6 @@ export default function ProfileClientPage() {
   const handleBadgeClick = async (badgeId: string) => {
     await setSelectedBadge(badgeId);
     setEquippedBadge(badgeId);
-    console.log("Selected Bagde: " + badgeId);
   };
 
   const renderBadges = () => {
