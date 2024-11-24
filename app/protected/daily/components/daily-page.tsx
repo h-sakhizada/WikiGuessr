@@ -27,6 +27,7 @@ export default function DailyClientPage() {
         refetchArticle={refetch}
         isUnlimited={false}
         title="Daily Wikipedia Challenge"
+        dailyGameId={article.daily_game_id}
       />
     </>
   );

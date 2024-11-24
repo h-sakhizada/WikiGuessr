@@ -31,7 +31,15 @@ export type Database = {
           id?: string
           profile_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "badge_profile_junction_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       badges: {
         Row: {
@@ -75,84 +83,44 @@ export type Database = {
         }
         Relationships: []
       }
-      extra_games: {
-        Row: {
-          article_id: number
-          created_at: string | null
-          game_id: string
-          id: string
-          original_game_id: string
-          user_id: string
-        }
-        Insert: {
-          article_id: number
-          created_at?: string | null
-          game_id: string
-          id?: string
-          original_game_id: string
-          user_id: string
-        }
-        Update: {
-          article_id?: number
-          created_at?: string | null
-          game_id?: string
-          id?: string
-          original_game_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "extra_games_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "daily_games"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "extra_games_original_game_id_fkey"
-            columns: ["original_game_id"]
-            isOneToOne: false
-            referencedRelation: "daily_games"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "extra_games_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       game_results: {
         Row: {
+          article_title: string
           attempt_date: string | null
           attempts: number | null
-          game_id: string
+          daily_game_id: string | null
           id: string
-          result: boolean
+          isVictory: boolean
+          score: number | null
+          type: Database["public"]["Enums"]["game_type"]
           user_id: string
         }
         Insert: {
+          article_title: string
           attempt_date?: string | null
           attempts?: number | null
-          game_id: string
+          daily_game_id?: string | null
           id?: string
-          result: boolean
+          isVictory: boolean
+          score?: number | null
+          type?: Database["public"]["Enums"]["game_type"]
           user_id: string
         }
         Update: {
+          article_title?: string
           attempt_date?: string | null
           attempts?: number | null
-          game_id?: string
+          daily_game_id?: string | null
           id?: string
-          result?: boolean
+          isVictory?: boolean
+          score?: number | null
+          type?: Database["public"]["Enums"]["game_type"]
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "game_results_game_id_fkey"
-            columns: ["game_id"]
+            foreignKeyName: "game_results_daily_game_id_fkey"
+            columns: ["daily_game_id"]
             isOneToOne: false
             referencedRelation: "daily_games"
             referencedColumns: ["id"]
@@ -163,39 +131,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      profile_badges: {
-        Row: {
-          badge_id: string
-          earned_at: string | null
-          profile_id: string
-        }
-        Insert: {
-          badge_id: string
-          earned_at?: string | null
-          profile_id: string
-        }
-        Update: {
-          badge_id?: string
-          earned_at?: string | null
-          profile_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profile_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "badges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profile_badges_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -223,6 +158,35 @@ export type Database = {
             foreignKeyName: "profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unlimited_games: {
+        Row: {
+          article_title: string | null
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          article_title?: string | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          article_title?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extra_games_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -260,7 +224,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      game_type: "unlimited" | "daily"
     }
     CompositeTypes: {
       [_ in never]: never

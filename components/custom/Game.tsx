@@ -1,5 +1,5 @@
 import { addRandomBadgeToUserCollection } from "@/actions/badge-actions";
-import { addVictory } from "@/actions/profile-actions";
+import { saveGameResult } from "@/actions/game-actions";
 import { useProfile } from "@/hooks/useProfile";
 import { FuzzyMatcher } from "@/lib/FuzzyMatcher";
 import { WikiArticleHints } from "@/utils/wiki_utils";
@@ -22,16 +22,15 @@ interface GameProps {
   ) => Promise<QueryObserverResult<WikiArticleHints, Error>>;
   isUnlimited: boolean;
   title: string;
+  dailyGameId?: string | null;
 }
 
-interface GuessResult {
-  isMatch: boolean;
-  message: string;
-  type: "success" | "error";
-  iconTheme: {
-    primary: string;
-    secondary: string;
-  };
+interface GameState {
+  currentHint: number;
+  attempts: number;
+  score: number;
+  isGameOver: boolean;
+  isVictory: boolean;
 }
 
 interface ScoreBreakdown {
@@ -42,36 +41,36 @@ interface ScoreBreakdown {
   finalScore: number;
 }
 
-export default function Game(props: GameProps) {
+function Game(props: GameProps) {
   const profile = useProfile();
-  const [currentHint, setCurrentHint] = useState(1);
+  const [gameState, setGameState] = useState<GameState>({
+    currentHint: 1,
+    attempts: 0,
+    score: 100,
+    isGameOver: false,
+    isVictory: false,
+  });
   const [guess, setGuess] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [isVictory, setIsVictory] = useState(false);
   const [victoryMessage, setVictoryMessage] = useState("");
-  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
-  const [currentScore, setCurrentScore] = useState(100);
   const [finalScore, setFinalScore] = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown | null>(
     null
   );
   const fuzzyMatcher = new FuzzyMatcher();
 
-  if (profile.isLoading) {
-    return <LoadingSpinner />;
-  }
-  if (!profile.data) {
-    return redirect("/sign-in");
-  }
+  if (profile.isLoading) return <LoadingSpinner />;
+  if (!profile.data) return redirect("/sign-in");
 
   const calculateScoreBreakdown = (
     hintsUsed: number,
-    incorrectAttempts: number,
+    attempts: number,
     similarity: number
   ): ScoreBreakdown => {
     const baseScore = 100;
     const hintPenalty = Math.max(0, (hintsUsed - 1) * 20);
-    const guessPenalty = incorrectAttempts * 10;
+    // For correct guesses, we don't want to count the successful attempt as a penalty
+    const guessPenalty = Math.max(0, (attempts - 1) * 10); // Subtract 1 to not penalize the successful guess
     const remainingScore = Math.max(0, baseScore - hintPenalty - guessPenalty);
     const finalScore = Math.round(remainingScore * similarity);
 
@@ -84,36 +83,89 @@ export default function Game(props: GameProps) {
     };
   };
 
-  const endGame = (isWin: boolean, scoreValue: number = 0) => {
-    setCurrentHint(6);
-    setIsVictory(isWin);
+  const endGame = async (
+    isWin: boolean,
+    scoreValue: number = 0,
+    breakdown?: ScoreBreakdown
+  ) => {
+    // Don't increment attempts here since it's already been incremented in checkGuess
+    setGameState((prev) => ({
+      ...prev,
+      currentHint: 6,
+      isGameOver: true,
+      isVictory: isWin,
+    }));
+
     setShowResult(true);
     setFinalScore(scoreValue);
-    setScoreBreakdown(null);
+    setScoreBreakdown(breakdown || null);
+    setVictoryMessage(
+      isWin ? "Congratulations! You got it!" : "Better luck next time!"
+    );
+
+    if (!profile.data) {
+      toast.error("Failed to save game result");
+      return;
+    }
+
+    try {
+      // Get the current attempts value from gameState
+      const validAttempts = Math.min(Math.max(1, gameState.attempts + 1), 10);
+
+      await saveGameResult({
+        articleTitle: props.article.fullTitle,
+        isVictory: isWin,
+        score: Math.max(0, Math.min(scoreValue, 100)),
+        userId: profile.data.user_id,
+        isUnlimited: props.isUnlimited,
+        attempts: validAttempts,
+        daily_game_id: props.isUnlimited ? null : props.dailyGameId,
+      });
+    } catch (error) {
+      console.error("Error saving game result:", error);
+      toast.error("Failed to save game result");
+    }
   };
 
   const showNextHint = () => {
-    if (currentHint < 5) {
-      const newScore = Math.max(0, currentScore - 20);
-      setCurrentScore(newScore);
-      setCurrentHint((prev) => Math.min(prev + 1, 6));
+    if (gameState.currentHint < 5) {
+      const newScore = Math.max(0, gameState.score - 20);
+      setGameState((prev) => ({
+        ...prev,
+        currentHint: Math.min(prev.currentHint + 1, 6),
+        score: newScore,
+      }));
 
       if (newScore === 0) {
-        endGame(false);
+        endGame(false, newScore);
       }
     }
   };
 
-  const resetHints = () => {
-    setCurrentHint(1);
+  const resetGame = () => {
+    setGameState({
+      currentHint: 1,
+      attempts: 0,
+      score: 100,
+      isGameOver: false,
+      isVictory: false,
+    });
     setGuess("");
-    setIncorrectGuesses(0);
-    setCurrentScore(100);
     setFinalScore(0);
     setScoreBreakdown(null);
     props.refetchArticle();
   };
-  const checkGuess = (): void => {
+
+  const handleGiveUp = () => {
+    // Increment attempts before giving up
+    setGameState((prev) => ({
+      ...prev,
+      attempts: prev.attempts + 1,
+    }));
+    endGame(false, 0);
+  };
+
+  const checkGuess = async (): Promise<void> => {
     if (guess.trim().length === 0) {
       toast.error("Please enter a guess!", {
         iconTheme: { primary: "red", secondary: "white" },
@@ -122,60 +174,27 @@ export default function Game(props: GameProps) {
       return;
     }
 
-    if (currentHint > 5 || !props.article) {
-      return;
-    }
+    if (gameState.currentHint > 5 || !props.article) return;
 
     const match = fuzzyMatcher.match(guess, props.article.fullTitle);
+    const isCorrect = match.similarity >= 0.8;
 
-    const getGuessResult = (similarity: number): GuessResult => {
-      if (similarity === 1) {
-        return {
-          isMatch: true,
-          message: "Perfect guess!",
-          type: "success",
-          iconTheme: { primary: "green", secondary: "white" },
-        };
-      }
-      if (similarity >= 0.8) {
-        return {
-          isMatch: true,
-          message: "Close enough! You got it!",
-          type: "success",
-          iconTheme: { primary: "green", secondary: "white" },
-        };
-      }
-      if (similarity >= 0.2) {
-        return {
-          isMatch: false,
-          message: "Sooo close!",
-          type: "error",
-          iconTheme: { primary: "orange", secondary: "white" },
-        };
-      }
-      return {
-        isMatch: false,
-        message: "Nope! Try again.",
-        type: "error",
-        iconTheme: { primary: "red", secondary: "white" },
-      };
-    };
-
-    const result = getGuessResult(match.similarity);
-
-    if (result.type === "success") {
+    if (isCorrect) {
+      // For correct guesses, use current attempts for score calculation
+      // This way, only previous wrong guesses are penalized
       const breakdown = calculateScoreBreakdown(
-        currentHint,
-        incorrectGuesses,
+        gameState.currentHint,
+        gameState.attempts, // Use current attempts, not incremented
         Math.floor(match.similarity * 100) / 100
       );
-      setScoreBreakdown(breakdown);
-      setFinalScore(breakdown.finalScore);
-      setCurrentHint(6);
-      setIsVictory(true);
-      setShowResult(true);
-      addVictory(props.article.fullTitle);
-      setVictoryMessage(`${result.message}`);
+
+      // Update attempts after calculating score
+      setGameState((prev) => ({
+        ...prev,
+        attempts: prev.attempts + 1,
+      }));
+
+      endGame(true, breakdown.finalScore, breakdown);
 
       try {
         const badgePromise = addRandomBadgeToUserCollection();
@@ -188,30 +207,31 @@ export default function Game(props: GameProps) {
         }
       } catch (error) {
         console.error("Error adding badge:", error);
-        return;
       }
     } else {
-      setIncorrectGuesses((prev) => prev + 1);
-      const newScore = Math.max(0, currentScore - 10);
-      setCurrentScore(newScore);
+      // For wrong guesses, increment attempts first
+      const newAttempts = gameState.attempts + 1;
+      const newScore = Math.max(0, gameState.score - 10);
 
-      if (newScore === 0) {
-        endGame(false);
-        return;
-      }
+      setGameState((prev) => ({
+        ...prev,
+        score: newScore,
+        attempts: newAttempts,
+      }));
 
-      toast.error(result.message, {
-        iconTheme: result.iconTheme,
-      });
-
-      if (currentHint === 5) {
-        endGame(false);
+      if (newScore === 0 || gameState.currentHint === 5) {
+        endGame(false, newScore);
+      } else {
+        const message =
+          match.similarity >= 0.2 ? "Sooo close!" : "Nope! Try again.";
+        toast.error(message, {
+          iconTheme: {
+            primary: match.similarity >= 0.2 ? "orange" : "red",
+            secondary: "white",
+          },
+        });
       }
     }
-  };
-
-  const handleGiveUp = () => {
-    endGame(false);
   };
 
   return (
@@ -220,8 +240,8 @@ export default function Game(props: GameProps) {
       <GameResultDialog
         isOpen={showResult}
         onClose={() => setShowResult(false)}
-        isVictory={isVictory}
-        numberOfGuesses={incorrectGuesses + 1}
+        isVictory={gameState.isVictory}
+        numberOfGuesses={gameState.attempts}
         isDaily={!props.isUnlimited}
         article={{
           fullTitle: props.article?.fullTitle || "",
@@ -230,7 +250,7 @@ export default function Game(props: GameProps) {
         victoryMessage={victoryMessage}
         scoreBreakdown={scoreBreakdown}
       />
-      <main className="flex-1 container sm:mx-auto sm:px-4 py-8 px-0 ">
+      <main className="flex-1 container sm:mx-auto sm:px-4 py-8 px-0">
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">
@@ -243,7 +263,7 @@ export default function Game(props: GameProps) {
                 <div className="flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-yellow-500" />
                   <span className="text-lg font-semibold">
-                    Current Score: {currentScore}
+                    Current Score: {gameState.score}
                   </span>
                 </div>
                 {finalScore > 0 && (
@@ -268,9 +288,11 @@ export default function Game(props: GameProps) {
                       checkGuess();
                     }
                   }}
-                  disabled={currentScore === 0 || currentHint === 6}
+                  disabled={
+                    gameState.score === 0 || gameState.currentHint === 6
+                  }
                 />
-                {isVictory || currentHint === 6 ? (
+                {gameState.isVictory || gameState.currentHint === 6 ? (
                   <Button
                     variant="secondary"
                     size="default"
@@ -284,7 +306,9 @@ export default function Game(props: GameProps) {
                     variant="secondary"
                     size="default"
                     onClick={checkGuess}
-                    disabled={currentHint > 5 || currentScore === 0}
+                    disabled={
+                      gameState.currentHint > 5 || gameState.score === 0
+                    }
                     className="group"
                   >
                     <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
@@ -294,7 +318,7 @@ export default function Game(props: GameProps) {
                   <Button
                     size="lg"
                     variant="secondary"
-                    onClick={resetHints}
+                    onClick={resetGame}
                     className="group"
                   >
                     New Article
@@ -307,7 +331,10 @@ export default function Game(props: GameProps) {
         </Card>
 
         <div className="space-y-4">
-          <HintSection title="Related Topics" isVisible={currentHint >= 1}>
+          <HintSection
+            title="Related Topics"
+            isVisible={gameState.currentHint >= 1}
+          >
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
               {props.article?.hint1.map((link, index) => (
                 <li key={index}>{link}</li>
@@ -315,7 +342,7 @@ export default function Game(props: GameProps) {
             </ul>
           </HintSection>
 
-          <HintSection title="Image" isVisible={currentHint >= 2}>
+          <HintSection title="Image" isVisible={gameState.currentHint >= 2}>
             {props.article?.hint2 ? (
               <div className="flex justify-center">
                 <Image
@@ -335,18 +362,21 @@ export default function Game(props: GameProps) {
 
           <HintSection
             title="Additional Information"
-            isVisible={currentHint >= 3}
+            isVisible={gameState.currentHint >= 3}
           >
             {props.article?.hint3 && formatInfoBox(props.article.hint3)}
           </HintSection>
 
-          <HintSection title="More Related Links" isVisible={currentHint >= 4}>
+          <HintSection
+            title="More Related Links"
+            isVisible={gameState.currentHint >= 4}
+          >
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
               {props.article?.hint4.map((link) => <li key={link}>{link}</li>)}
             </ul>
           </HintSection>
 
-          <HintSection title="Summary" isVisible={currentHint >= 5}>
+          <HintSection title="Summary" isVisible={gameState.currentHint >= 5}>
             <p className="text-muted-foreground leading-relaxed">
               {props.article?.hint5}
             </p>
@@ -354,7 +384,7 @@ export default function Game(props: GameProps) {
         </div>
 
         <div className="flex justify-center">
-          {currentHint === 5 ? (
+          {gameState.currentHint === 5 ? (
             <Button
               size="lg"
               onClick={handleGiveUp}
@@ -370,7 +400,7 @@ export default function Game(props: GameProps) {
               onClick={showNextHint}
               className="group flex items-center gap-2"
               variant="secondary"
-              disabled={currentScore <= 20}
+              disabled={gameState.score <= 20}
             >
               Show Next Hint
               <Lightbulb className="h-4 w-4 group-hover:text-yellow-400 transition-colors" />
@@ -379,7 +409,7 @@ export default function Game(props: GameProps) {
           )}
         </div>
 
-        {currentHint === 1 && (
+        {gameState.currentHint === 1 && (
           <section className="bg-secondary/10 rounded-lg p-8 mt-12">
             <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
             <p className="text-lg text-muted-foreground">
@@ -395,19 +425,17 @@ export default function Game(props: GameProps) {
   );
 }
 
-const HintSection = ({
-  title,
-  isVisible,
-  children,
-}: {
+interface HintSectionProps {
   title: string;
   isVisible: boolean;
   children: React.ReactNode;
-}) => {
+}
+
+const HintSection = ({ title, isVisible, children }: HintSectionProps) => {
   return (
     <div
       className={`transition-all duration-500 ease-in-out overflow-hidden ${
-        isVisible ? " opacity-100 mb-6" : "max-h-0 opacity-0 mb-0"
+        isVisible ? "opacity-100 mb-6" : "max-h-0 opacity-0 mb-0"
       }`}
     >
       <Card className="hover:shadow-lg transition-shadow">
@@ -426,6 +454,7 @@ const HintSection = ({
 interface InfoboxProps {
   info: Record<string, any>;
 }
+
 const WikipediaInfobox = ({ info }: InfoboxProps) => {
   return (
     <div className="border rounded-lg overflow-hidden bg-secondary/10">
@@ -487,3 +516,5 @@ const formatInfoBox = (hint3: string) => {
     );
   }
 };
+
+export default Game;

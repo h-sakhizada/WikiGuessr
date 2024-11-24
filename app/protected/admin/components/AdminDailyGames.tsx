@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
 } from "@tanstack/react-table";
-import { useAdminDailyGames, DailyGame } from "@/hooks/useAdminDailyGames";
+import { useAdminDailyGames } from "@/hooks/useAdminDailyGames";
 import { format, isAfter, parseISO, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import {
   Plus,
 } from "lucide-react";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
+import { DailyGame } from "@/types";
 
 // Create a separate EditableCell component to handle the editing state
 const EditableCell = React.memo(

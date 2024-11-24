@@ -59,12 +59,14 @@ export interface WikiArticleHints {
   hint5: string; // Entire summary with title redacted
   fullTitle: string; // The full title (for reference)
   url: string; // The full Wikipedia URL
+  daily_game_id?: string | null; // The ID of the daily game
 }
 
 export const formatWikiHints = (
   summary: wikiSummary,
   related: relatedResult,
-  info: Record<string, any> | null
+  info: Record<string, any> | null,
+  dailyGameId?: string | null
 ): WikiArticleHints => {
   const redactTitle = createTitleRedactor(summary.title);
 
@@ -76,5 +78,6 @@ export const formatWikiHints = (
     hint5: redactTitle(summary.extract),
     fullTitle: summary.title,
     url: getWikiArticleUrl(summary.title),
+    daily_game_id: dailyGameId,
   };
 };

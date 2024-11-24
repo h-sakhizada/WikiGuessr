@@ -4,7 +4,8 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Badge = Database["public"]["Tables"]["badges"]["Row"];
 export type DailyGame = Database["public"]["Tables"]["daily_games"]["Row"];
 
-export type ExtraGame = Database["public"]["Tables"]["extra_games"]["Row"];
+export type UnlimitedGame =
+  Database["public"]["Tables"]["unlimited_games"]["Row"];
 export type GameResult = Database["public"]["Tables"]["game_results"]["Row"];
 export type User = Database["public"]["Tables"]["users"]["Row"];
 
