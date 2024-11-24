@@ -21,11 +21,16 @@ export const createTitleRedactor = (title: string) => {
   };
 };
 
-export const formatRelated = (related: relatedResult): string[] => {
-  // return the first 5 related links
+export const formatRelated = (
+  title: string,
+  related: relatedResult,
+  from: number,
+  to: number
+): string[] => {
+  const redactTitle = createTitleRedactor(title);
   return related.pages
-    .slice(0, 5)
-    .map((page) => page.title.split("_").join(" "));
+    .slice(from, to)
+    .map((page) => redactTitle(page.title.split("_").join(" ")));
 };
 
 export const formatTitleInitials = (title: string): string => {
@@ -50,7 +55,7 @@ export interface WikiArticleHints {
   hint1: string[]; // Some of the links on the page
   hint2: string | null; // The image URL
   hint3: string; // Right panel information with title redacted
-  hint4: string; // Title with only first letters of each word
+  hint4: string[]; // More of the links on the page
   hint5: string; // Entire summary with title redacted
   fullTitle: string; // The full title (for reference)
   url: string; // The full Wikipedia URL
@@ -64,10 +69,10 @@ export const formatWikiHints = (
   const redactTitle = createTitleRedactor(summary.title);
 
   return {
-    hint1: formatRelated(related),
+    hint1: formatRelated(summary.title, related, 0, 5),
     hint2: summary.thumbnail?.source || null,
     hint3: formatInfobox(info, redactTitle),
-    hint4: formatTitleInitials(summary.title),
+    hint4: formatRelated(summary.title, related, 5, 10),
     hint5: redactTitle(summary.extract),
     fullTitle: summary.title,
     url: getWikiArticleUrl(summary.title),

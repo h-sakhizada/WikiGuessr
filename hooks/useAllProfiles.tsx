@@ -1,19 +1,33 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getAllProfiles } from "@/actions/profile-actions";
-import { Profile } from "@/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAllUsersAndProfiles } from "@/actions/profile-actions";
+import { Profile, User } from "@/types";
 
-export function useAllProfiles() {
-  return useQuery<Profile[] | null, Error>({
-    queryKey: ["allProfilea"],
+export type ProfileWithUser = Profile & User;
+
+export const useAdminAllProfiles = () => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error, refetch } = useQuery<
+    ProfileWithUser[] | null,
+    Error
+  >({
+    queryKey: ["allProfiles"],
     queryFn: async () => {
-      const profiles = await getAllProfiles();
-      if (!profiles) {
-        console.log("No profiles found");
+      const profiles = await getAllUsersAndProfiles();
+      if (!profiles || profiles.length === 0) {
+        return null;
       }
       return profiles;
     },
-    retry: false, // Don't retry
+    retry: false,
   });
-}
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch,
+  };
+};

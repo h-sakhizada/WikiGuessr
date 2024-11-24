@@ -13,6 +13,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LoadingSpinner from "@/components/loading-spinner";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 export default function ProtectedHomePage() {
   const user = useProfile();
@@ -20,8 +21,6 @@ export default function ProtectedHomePage() {
   if (user.isLoading) {
     return <LoadingSpinner />;
   }
-
-  console.log(user.data);
 
   if (!user.data) {
     return redirect("/sign-in");

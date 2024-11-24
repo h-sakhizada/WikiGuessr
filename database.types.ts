@@ -119,18 +119,18 @@ export type Database = {
       }
       daily_games: {
         Row: {
-          article_id: number
-          date: string
+          article_title: string
+          day_of_game: string
           id: number
         }
         Insert: {
-          article_id: number
-          date: string
+          article_title: string
+          day_of_game: string
           id?: number
         }
         Update: {
-          article_id?: number
-          date?: string
+          article_title?: string
+          day_of_game?: string
           id?: number
         }
         Relationships: []

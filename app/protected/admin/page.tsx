@@ -7,7 +7,7 @@ export default async function AdminPage() {
     {
       title: "Profiles",
       description: "Manage user profiles and permissions",
-      href: "/protected/admin/users",
+      href: "/protected/admin/profiles",
       icon: <Users className="text-black" />,
       active: true,
     },
@@ -30,7 +30,7 @@ export default async function AdminPage() {
       description: "View site statistics and reports",
       href: "/protected/admin/analytics",
       icon: <BarChart2 className="text-black" />,
-      active: false,
+      active: true,
     },
     {
       title: "Settings",

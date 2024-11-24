@@ -1,10 +1,12 @@
 "use server";
-import { Profile } from "@/types";
+import { Profile, User } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
 //  Actions to perform CRUD operations on profiles in supabase.
 //------------------------------------------------------------------------------------------
-export async function getProfile(uuid?: string): Promise<Profile | null> {
+export async function getUserAndProfile(
+  uuid?: string
+): Promise<Profile | null> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -15,33 +17,62 @@ export async function getProfile(uuid?: string): Promise<Profile | null> {
   }
 
   if (!uuid) return null;
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", uuid)
+    .maybeSingle();
 
-  const { data, error } = await supabase
-    .from("profile")
+  if (profileError) {
+    console.error("Error fetching profile:", profileError);
+    throw profileError;
+  }
+
+  const { data: userData, error: userError } = await supabase
+    .from("users")
     .select("*")
     .eq("id", uuid)
     .maybeSingle();
 
-  if (error && error.code !== "PGRST116") {
-    console.error("Error fetching profile:", error);
-    throw error;
+  if (userError) {
+    console.error("Error fetching user data:", userError);
+    throw userError;
   }
 
-  return data as Profile | null;
+  return { ...profileData, ...userData };
 }
 
-
-export async function getAllProfiles(): Promise<Profile[]> {
+export async function getAllUsersAndProfiles(): Promise<(Profile & User)[]> {
   const supabase = createClient();
 
-  const { data, error } = await supabase.from("profile").select("*");
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*");
 
-  if (error) {
-    console.error("Error fetching all profiles:", error);
-    throw error;
+  if (profileError) {
+    console.error("Error fetching profiles:", profileError);
+    throw profileError;
   }
 
-  return data as Profile[];
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("*");
+
+  if (userError) {
+    console.error("Error fetching users:", userError);
+    throw userError;
+  }
+
+  // Merge the profile and user data based on user_id/id
+  const mergedData = profileData.map((profile) => {
+    const matchingUser = userData.find((user) => user.id === profile.user_id);
+    return {
+      ...profile,
+      ...matchingUser,
+    };
+  });
+
+  return mergedData as (Profile & User)[];
 }
 
 export async function deleteProfile(uuid?: string): Promise<boolean> {
@@ -60,9 +91,9 @@ export async function deleteProfile(uuid?: string): Promise<boolean> {
   }
 
   const { error } = await supabase
-    .from("profile")
+    .from("profiles")
     .delete()
-    .eq("id", uuid);
+    .eq("user_id", uuid);
 
   if (error) {
     console.error("Error deleting profile:", error);
@@ -72,12 +103,20 @@ export async function deleteProfile(uuid?: string): Promise<boolean> {
   return true;
 }
 
-
 export async function editProfile(profile: Profile): Promise<Profile> {
   const supabase = createClient();
+
+  // Only include the fields that are present in profiles table
+  const updateData = {
+    user_id: profile.user_id,
+    username: profile.username,
+    avatar: profile.avatar,
+    bio: profile.bio,
+  };
+
   const { data, error } = await supabase
-    .from("profile")
-    .upsert(profile)
+    .from("profiles")
+    .upsert(updateData)
     .single();
 
   if (error) {
@@ -88,13 +127,11 @@ export async function editProfile(profile: Profile): Promise<Profile> {
   return data as Profile;
 }
 
-
 //  Helper actions to modify specific columns in the profile table.
 //------------------------------------------------------------------------------------------
 
 // Premium / Free Helper Methods
 //-------------------------------------------------------
-
 export async function setProfileToPremium(uuid?: string): Promise<void> {
   const supabase = createClient();
 
@@ -108,7 +145,7 @@ export async function setProfileToPremium(uuid?: string): Promise<void> {
   if (!uuid) return;
 
   const { error } = await supabase
-    .from("profile")
+    .from("users")
     .update({ is_premium: true })
     .eq("id", uuid);
 
@@ -131,7 +168,7 @@ export async function setProfileToFree(uuid?: string): Promise<void> {
   if (!uuid) return;
 
   const { error } = await supabase
-    .from("profile")
+    .from("users")
     .update({ is_premium: false })
     .eq("id", uuid);
 
@@ -141,12 +178,15 @@ export async function setProfileToFree(uuid?: string): Promise<void> {
   }
 }
 
-export async function togglePremium(uuid: string, isPremium: boolean): Promise<boolean> {
+export async function togglePremium(
+  uuid: string,
+  isPremium: boolean
+): Promise<boolean> {
   const supabase = createClient();
 
   const { error } = await supabase
-    .from("profile")
-    .update({ is_premium: !isPremium })  // Toggle the premium status
+    .from("users")
+    .update({ is_premium: !isPremium }) // Toggle the premium status
     .eq("id", uuid);
 
   if (error) {
@@ -156,7 +196,6 @@ export async function togglePremium(uuid: string, isPremium: boolean): Promise<b
 
   return true;
 }
-
 
 // Victory Helper Methods
 //-------------------------------------------------------
@@ -213,3 +252,58 @@ export async function addVictory(
   }
 }
 
+// Badge_Profile helper function to change selected badge
+export async function setSelectedBadge(badgeId: string): Promise<void> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  var userId = user?.id;
+
+  const { error: resetError } = await supabase
+    .from("badge_profile_junction")
+    .update({ badge_selected: false })
+    .eq("profile_id", userId);
+
+  if (resetError) {
+    console.error("Error resetting badge selection:", resetError);
+    throw resetError;
+  }
+
+  const { error, data } = await supabase
+    .from("badge_profile_junction")
+    .update({ badge_selected: true })
+    .match({ badge_id: badgeId, profile_id: userId })
+    .single();
+
+  if (error) {
+    console.error("Error updating badge selection:", error);
+    throw error;
+  }
+}
+
+export async function getSelectedBadge(): Promise<string | null> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  var userId = user?.id;
+
+  if (!userId) return null; // No user is signed in
+
+  const { data, error } = await supabase
+    .from("badge_profile_junction")
+    .select("badge_id")
+    .eq("profile_id", userId)
+    .eq("badge_selected", true)
+    .single();
+
+  if (error) {
+    console.error("Error fetching selected badge:", error);
+    throw error;
+  }
+
+  return data ? data.badge_id : null;
+}

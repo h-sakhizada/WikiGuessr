@@ -4,15 +4,17 @@ import React, { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAllProfiles } from "@/hooks/useAllProfiles";
-import { Profile } from "@/types";
+import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
 import { ColumnDef } from "@tanstack/react-table";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import { deleteProfile, togglePremium } from "@/actions/profile-actions";
 import { Loader2, Trash2, ArrowUpDown } from "lucide-react";
 
+import { Profile } from "@/types";
+import { ProfileWithUser } from "@/hooks/useAllProfiles";
+
 const AdminUserManagement = () => {
-  const { data: profiles, isLoading, refetch } = useAllProfiles();
+  const { data: profiles, isLoading, refetch } = useAdminAllProfiles();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedProfileIds, setSelectedProfileIds] = useState<string[]>([]);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
@@ -34,7 +36,6 @@ const AdminUserManagement = () => {
     const success = await togglePremium(userId, isPremium);
     if (success) {
       refetch(); // Refresh the profiles to show updated status
-      console.log("Profile premium status updated");
     } else {
       console.error("Failed to update premium status");
     }
@@ -51,7 +52,6 @@ const AdminUserManagement = () => {
     if (results.every((success) => success)) {
       refetch();
       setSelectedProfileIds([]); // Clear selected IDs after deletion
-      console.log("All selected non-admin users deleted successfully");
     } else {
       console.error("Failed to delete some users");
     }
@@ -77,7 +77,7 @@ const AdminUserManagement = () => {
     );
   };
 
-  const columns: ColumnDef<Profile>[] = [
+  const columns: ColumnDef<ProfileWithUser>[] = [
     {
       id: "select",
       header: () => (
@@ -175,7 +175,9 @@ const AdminUserManagement = () => {
   return (
     <div>
       <Breadcrumb />
-      <h1>User Management</h1>
+      <h1 className="text-2xl font-bold mb-6">User Profile Management</h1>
+
+      <DataTable columns={columns} data={profiles} />
 
       {selectedProfileIds.length > 0 &&
         (confirmDeleteSelected ? (
@@ -199,8 +201,6 @@ const AdminUserManagement = () => {
             Delete Selected ({selectedProfileIds.length})
           </Button>
         ))}
-
-      <DataTable columns={columns} data={profiles} />
     </div>
   );
 };

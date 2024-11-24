@@ -21,12 +21,14 @@ const useDailyGame = () => {
 
         // Fetch today's article from Supabase
         const { data: dailyGame, error } = await supabase
-          .from("daily_game")
+          .from("daily_games")
           .select("*")
           .eq("day_of_game", today)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         if (!dailyGame) throw new Error("No game found for today");
 
         // Fetch Wikipedia article data

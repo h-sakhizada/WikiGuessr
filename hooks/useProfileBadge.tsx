@@ -10,7 +10,6 @@ export function useProfileSelectedBadges(uuid?: string) {
     queryFn: async () => {
       const badges = await getBadgesForUser(uuid);
       if (!badges) {
-        console.log("No Badges found for user:", uuid);
         return null;
       }
       return badges;
