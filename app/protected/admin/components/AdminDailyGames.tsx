@@ -25,13 +25,6 @@ import {
 } from "lucide-react";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 
-interface EditState {
-  [key: number]: {
-    isEditing: boolean;
-    editedTitle: string;
-  };
-}
-
 // Create a separate EditableCell component to handle the editing state
 const EditableCell = React.memo(
   ({
@@ -40,10 +33,10 @@ const EditableCell = React.memo(
     onSave,
     onCancel,
   }: {
-    id: number;
+    id: string;
     initialValue: string;
-    onSave: (id: number, value: string) => Promise<void>;
-    onCancel: (id: number) => void;
+    onSave: (id: string, value: string) => Promise<void>;
+    onCancel: (id: string) => void;
   }) => {
     const [value, setValue] = useState(initialValue);
     const [isLoading, setIsLoading] = useState(false);
@@ -105,10 +98,10 @@ const AdminDailyGames = () => {
   const [newGameTitle, setNewGameTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleSave = async (id: number, newTitle: string) => {
+  const handleSave = async (id: string, newTitle: string) => {
     try {
       await updateGame.mutateAsync({
         id,
@@ -138,9 +131,10 @@ const AdminDailyGames = () => {
     columnHelper.accessor("article_title", {
       header: "Article Title",
       cell: (info) => {
-        const id = Number(info.row.original.id);
+        const id = info.row.original.id;
         const isEditing = editingId === id;
 
+        console.log(id, isEditing);
         if (isEditing) {
           return (
             <EditableCell
@@ -170,7 +164,7 @@ const AdminDailyGames = () => {
     columnHelper.accessor("id", {
       header: "Actions",
       cell: (info) => {
-        const id = Number(info.getValue());
+        const id = info.getValue();
         const articleTitle = info.row.original.article_title;
         const wikipediaUrl = `https://wikipedia.org/wiki/${encodeURIComponent(articleTitle)}`;
 
@@ -256,7 +250,7 @@ const AdminDailyGames = () => {
     }
   };
 
-  const handleDeleteGame = async (id: number) => {
+  const handleDeleteGame = async (id: string) => {
     try {
       await deleteGame.mutateAsync(id);
       setDeleteConfirmId(null);

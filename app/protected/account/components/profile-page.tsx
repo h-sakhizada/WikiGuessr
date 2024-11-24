@@ -7,7 +7,6 @@ import {
 } from "@/actions/profile-actions";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
-import { useProfileSelectedBadges } from "@/hooks/useProfileBadge";
 import { Profile } from "@/types";
 import {
   Camera,
@@ -25,6 +24,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import BadgeModal from "../../../../components/ui/badgeModal";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
+import { useProfileSelectedBadges } from "@/hooks/useBadge";
 
 export default function ProfileClientPage() {
   const { data: profile, isLoading, refetch } = useProfile();
@@ -326,7 +326,9 @@ export default function ProfileClientPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
             className="flex-1"
-            onClick={() => (window.location.href = "/protected/statistics")}
+            onClick={() =>
+              (window.location.href = "/protected/account/statistics")
+            }
           >
             <LineChart className="h-4 w-4 mr-2" />
             Personal Statistics

@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { DataTable } from "@/components/ui/data-table";
+import { deleteProfile, togglePremium } from "@/actions/profile-actions";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
+import { DataTable } from "@/components/ui/data-table";
+import { useAllProfiles } from "@/hooks/useProfile";
+import { ProfileWithUser } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import Breadcrumb from "@/components/custom/Breadcrumbs";
-import { deleteProfile, togglePremium } from "@/actions/profile-actions";
-import { Loader2, Trash2, ArrowUpDown } from "lucide-react";
-
-import { Profile } from "@/types";
-import { ProfileWithUser } from "@/hooks/useAllProfiles";
+import { ArrowUpDown, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 const AdminUserManagement = () => {
-  const { data: profiles, isLoading, refetch } = useAdminAllProfiles();
+  const { data: profiles, isLoading, refetch } = useAllProfiles();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedProfileIds, setSelectedProfileIds] = useState<string[]>([]);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
@@ -96,7 +94,7 @@ const AdminUserManagement = () => {
           onCheckedChange={(checked) =>
             toggleSelectRow(row.original.id, !!checked)
           }
-          disabled={row.original.is_admin} // Disable checkbox if the user is an admin
+          disabled={row.original.is_admin ?? undefined} // Disable checkbox if the user is an admin
           aria-label="Select row"
         />
       ),
@@ -126,7 +124,10 @@ const AdminUserManagement = () => {
         <Button
           variant={row.original.is_premium ? "destructive" : "default"}
           onClick={() =>
-            handleTogglePremium(row.original.id, row.original.is_premium)
+            handleTogglePremium(
+              row.original.id,
+              row.original.is_premium ?? false
+            )
           }
         >
           {row.original.is_premium ? "Unset Premium" : "Set Premium"}
@@ -163,7 +164,7 @@ const AdminUserManagement = () => {
             size="icon"
             title={isAdmin ? "Admin users cannot be deleted" : "Delete User"}
             onClick={() => !isAdmin && setConfirmDeleteId(profileId)}
-            disabled={isAdmin}
+            disabled={isAdmin ?? undefined} // Disable button if the user is an admin
           >
             <Trash2 className="h-4 w-4" />
           </Button>

@@ -10,9 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import UserAnalyticsOverview from "../analytics/components/overview";
-import { useAdminAllProfiles } from "@/hooks/useAllProfiles";
+import { useAllProfiles } from "@/hooks/useProfile";
 import { useAllGameResults } from "@/hooks/useAllGames";
-import { useAllBadges } from "@/hooks/useAllBadges";
+import { useAllBadges } from "@/hooks/useBadge";
 import { useAllExtraGames } from "@/hooks/useAllExtraGames";
 import { Progress } from "@/components/ui/progress";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
@@ -25,7 +25,7 @@ import Breadcrumb from "@/components/custom/Breadcrumbs";
  */
 
 const AdminAnalyticsManagement = () => {
-  const { data: profiles } = useAdminAllProfiles();
+  const { data: profiles } = useAllProfiles();
   const { data: games } = useAllGameResults();
   const { data: badges } = useAllBadges();
   const { data: extraGames } = useAllExtraGames();

@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 //------------------------------------------------------------------------------------------
 export async function getUserAndProfile(
   uuid?: string
-): Promise<Profile | null> {
+): Promise<(Profile & User) | null> {
   const supabase = createClient();
 
   if (!uuid) {

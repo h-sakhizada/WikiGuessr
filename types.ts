@@ -12,3 +12,5 @@ export type ProfileBadges = {
   meta: Database["public"]["Tables"]["badge_profile_junction"]["Row"][];
   badges: Database["public"]["Tables"]["badges"]["Row"][];
 };
+
+export type ProfileWithUser = Profile & User;

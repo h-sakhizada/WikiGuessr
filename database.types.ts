@@ -9,7 +9,31 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      badge: {
+      badge_profile_junction: {
+        Row: {
+          badge_id: string
+          badge_selected: boolean | null
+          created_at: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          badge_id: string
+          badge_selected?: boolean | null
+          created_at?: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          badge_id?: string
+          badge_selected?: boolean | null
+          created_at?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
+      badges: {
         Row: {
           created_at: string
           description: string | null
@@ -33,105 +57,21 @@ export type Database = {
         }
         Relationships: []
       }
-      badge_profile_junction: {
-        Row: {
-          badge_id: string
-          badge_selected: boolean | null
-          created_at: string
-          id: string
-          profile_id: string
-        }
-        Insert: {
-          badge_id: string
-          badge_selected?: boolean | null
-          created_at?: string
-          id?: string
-          profile_id: string
-        }
-        Update: {
-          badge_id?: string
-          badge_selected?: boolean | null
-          created_at?: string
-          id?: string
-          profile_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "badge_profile_junction_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "badge"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "badge_profile_junction_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profile"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      badges: {
-        Row: {
-          created_at: string
-          description: string | null
-          icon: string
-          id: number
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          icon: string
-          id?: number
-          name?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          icon?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      daily_game: {
-        Row: {
-          article_title: string
-          created_at: string
-          day_of_game: string
-          id: number
-        }
-        Insert: {
-          article_title: string
-          created_at?: string
-          day_of_game: string
-          id?: number
-        }
-        Update: {
-          article_title?: string
-          created_at?: string
-          day_of_game?: string
-          id?: number
-        }
-        Relationships: []
-      }
       daily_games: {
         Row: {
           article_title: string
           day_of_game: string
-          id: number
+          id: string
         }
         Insert: {
           article_title: string
           day_of_game: string
-          id?: number
+          id?: string
         }
         Update: {
           article_title?: string
           day_of_game?: string
-          id?: number
+          id?: string
         }
         Relationships: []
       }
@@ -139,25 +79,25 @@ export type Database = {
         Row: {
           article_id: number
           created_at: string | null
-          game_id: number
-          id: number
-          original_game_id: number
+          game_id: string
+          id: string
+          original_game_id: string
           user_id: string
         }
         Insert: {
           article_id: number
           created_at?: string | null
-          game_id: number
-          id?: number
-          original_game_id: number
+          game_id: string
+          id?: string
+          original_game_id: string
           user_id: string
         }
         Update: {
           article_id?: number
           created_at?: string | null
-          game_id?: number
-          id?: number
-          original_game_id?: number
+          game_id?: string
+          id?: string
+          original_game_id?: string
           user_id?: string
         }
         Relationships: [
@@ -188,24 +128,24 @@ export type Database = {
         Row: {
           attempt_date: string | null
           attempts: number | null
-          game_id: number
-          id: number
+          game_id: string
+          id: string
           result: boolean
           user_id: string
         }
         Insert: {
           attempt_date?: string | null
           attempts?: number | null
-          game_id: number
-          id?: number
+          game_id: string
+          id?: string
           result: boolean
           user_id: string
         }
         Update: {
           attempt_date?: string | null
           attempts?: number | null
-          game_id?: number
-          id?: number
+          game_id?: string
+          id?: string
           result?: boolean
           user_id?: string
         }
@@ -226,55 +166,19 @@ export type Database = {
           },
         ]
       }
-      profile: {
-        Row: {
-          avatar: string | null
-          bio: string | null
-          created_at: string
-          email: string
-          id: string
-          is_admin: boolean
-          is_premium: boolean
-          username: string
-          victories: Json[] | null
-        }
-        Insert: {
-          avatar?: string | null
-          bio?: string | null
-          created_at?: string
-          email: string
-          id?: string
-          is_admin?: boolean
-          is_premium?: boolean
-          username: string
-          victories?: Json[] | null
-        }
-        Update: {
-          avatar?: string | null
-          bio?: string | null
-          created_at?: string
-          email?: string
-          id?: string
-          is_admin?: boolean
-          is_premium?: boolean
-          username?: string
-          victories?: Json[] | null
-        }
-        Relationships: []
-      }
       profile_badges: {
         Row: {
-          badge_id: number
+          badge_id: string
           earned_at: string | null
           profile_id: string
         }
         Insert: {
-          badge_id: number
+          badge_id: string
           earned_at?: string | null
           profile_id: string
         }
         Update: {
-          badge_id?: number
+          badge_id?: string
           earned_at?: string | null
           profile_id?: string
         }

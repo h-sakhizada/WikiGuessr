@@ -1,3 +1,4 @@
+import { DailyGame } from "@/types";
 import { createClient } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
@@ -6,13 +7,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export interface DailyGame {
-  id: bigint;
-  created_at: string;
-  day_of_game: string;
-  article_title: string;
-}
 
 export interface DailyGameInput {
   day_of_game: string;
@@ -59,7 +53,7 @@ export const useAdminDailyGames = () => {
       id,
       game,
     }: {
-      id: number;
+      id: string;
       game: Partial<DailyGameInput>;
     }) => {
       const { data, error } = await supabase
@@ -78,7 +72,7 @@ export const useAdminDailyGames = () => {
   });
 
   const deleteGame = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("daily_games")
         .delete()
