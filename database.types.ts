@@ -144,16 +144,19 @@ export type Database = {
       unlimited_games: {
         Row: {
           article_title: string | null
+          created_at: string
           id: string
           user_id: string
         }
         Insert: {
           article_title?: string | null
+          created_at?: string
           id?: string
           user_id: string
         }
         Update: {
           article_title?: string | null
+          created_at?: string
           id?: string
           user_id?: string
         }
