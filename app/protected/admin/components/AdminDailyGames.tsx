@@ -135,7 +135,6 @@ const AdminDailyGames = () => {
         const id = info.row.original.id;
         const isEditing = editingId === id;
 
-        console.log(id, isEditing);
         if (isEditing) {
           return (
             <EditableCell

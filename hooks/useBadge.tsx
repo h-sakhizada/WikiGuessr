@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
-import { Badge, ProfileBadges } from "@/types";
+import { Badge, UserBadges } from "@/types";
 import { getBadgesForUser } from "@/actions/badge-actions";
 
 const supabase = createClient();
@@ -133,8 +133,8 @@ export function useUploadBadge() {
   });
 }
 
-export function useProfileSelectedBadges(uuid?: string) {
-  return useQuery<ProfileBadges | null, Error>({
+export function useUserSelectedBadges(uuid?: string) {
+  return useQuery<UserBadges | null, Error>({
     queryKey: ["badge", uuid],
     queryFn: async () => {
       const badges = await getBadgesForUser(uuid);
@@ -143,6 +143,6 @@ export function useProfileSelectedBadges(uuid?: string) {
       }
       return badges;
     },
-    retry: false, // Don't retry if no profile is found
+    retry: false, // Don't retry if no user is found
   });
 }

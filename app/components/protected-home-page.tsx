@@ -1,5 +1,5 @@
 "use client";
-import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import {
   AwardIcon,
   GamepadIcon,
@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LoadingSpinner from "@/components/loading-spinner";
 
 export default function ProtectedHomePage() {
-  const user = useProfile();
+  const user = useUser();
 
   if (user.isLoading) {
     return <LoadingSpinner />;

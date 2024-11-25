@@ -1,6 +1,6 @@
 import { addRandomBadgeToUserCollection } from "@/actions/badge-actions";
 import { saveGameResult } from "@/actions/game-actions";
-import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import { FuzzyMatcher } from "@/lib/FuzzyMatcher";
 import { WikiArticleHints } from "@/utils/wiki_utils";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
@@ -43,22 +43,45 @@ interface ScoreBreakdown {
 interface SavedGameState extends GameState {
   articleTitle: string;
   timestamp: number;
+  userId: string;
 }
 
-const GAME_STATE_KEY = "wikigame_state";
+const GAME_STATE_PREFIX = "wikigame_state";
 const GAME_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 function Game(props: GameProps) {
-  const getSavedGameState = (): SavedGameState | null => {
+  const user = useUser();
+  const [guess, setGuess] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const [victoryMessage, setVictoryMessage] = useState("");
+  const [finalScore, setFinalScore] = useState(0);
+  const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown | null>(
+    null
+  );
+  const [articleTitle, setArticleTitle] = useState(props.article.fullTitle);
+  const fuzzyMatcher = new FuzzyMatcher();
+  const getGameStateKey = (userId: string) =>
+    `${GAME_STATE_PREFIX}_${userId}_${articleTitle}`;
+  const getSavedGameState = (userId?: string): SavedGameState | null => {
+    if (!userId) return null;
     try {
-      const saved = localStorage.getItem(GAME_STATE_KEY);
+      const saved = localStorage.getItem(getGameStateKey(userId));
       if (!saved) return null;
 
       const state = JSON.parse(saved) as SavedGameState;
 
       // Check if the saved state has expired
       if (Date.now() - state.timestamp > GAME_EXPIRY_TIME) {
-        clearSavedGameState();
+        clearSavedGameState(userId);
+        return null;
+      }
+
+      // Check if it's the same article and user
+      if (
+        state.articleTitle !== props.article.fullTitle ||
+        state.userId !== userId
+      ) {
+        clearSavedGameState(userId);
         return null;
       }
 
@@ -69,9 +92,8 @@ function Game(props: GameProps) {
     }
   };
 
-  const profile = useProfile();
   const [gameState, setGameState] = useState<GameState>(
-    getSavedGameState() ?? {
+    getSavedGameState(user.data?.id) ?? {
       currentHint: 1,
       attempts: 0,
       score: 100,
@@ -79,61 +101,59 @@ function Game(props: GameProps) {
       isVictory: false,
     }
   );
-  const [guess, setGuess] = useState("");
-  const [showResult, setShowResult] = useState(false);
-  const [victoryMessage, setVictoryMessage] = useState("");
-  const [finalScore, setFinalScore] = useState(0);
-  const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown | null>(
-    null
-  );
-  const fuzzyMatcher = new FuzzyMatcher();
 
-  // Load saved game state on component mount
+  // Load saved game state on component mount or when user changes
   useEffect(() => {
-    const savedState = getSavedGameState();
-    if (savedState && savedState.articleTitle === props.article.fullTitle) {
-      setGameState({
-        currentHint: savedState.currentHint,
-        attempts: savedState.attempts,
-        score: savedState.score,
-        isGameOver: savedState.isGameOver,
-        isVictory: savedState.isVictory,
-      });
-    } else {
-      // Clear expired or irrelevant saved state
-      clearSavedGameState();
+    if (user.data?.id) {
+      const savedState = getSavedGameState(user.data.id);
+      if (savedState && savedState.articleTitle === props.article.fullTitle) {
+        setGameState({
+          currentHint: savedState.currentHint,
+          attempts: savedState.attempts,
+          score: savedState.score,
+          isGameOver: savedState.isGameOver,
+          isVictory: savedState.isVictory,
+        });
+      } else {
+        // Clear expired or irrelevant saved state
+        clearSavedGameState(user.data.id);
+      }
     }
-  }, [props.article.fullTitle]);
+  }, [user.data?.id, articleTitle]);
 
   // Save game state whenever it changes
   useEffect(() => {
-    if (props.article.fullTitle) {
+    if (articleTitle && user.data?.id) {
       saveGameState({
         ...gameState,
-        articleTitle: props.article.fullTitle,
+        articleTitle: articleTitle,
         timestamp: Date.now(),
+        userId: user.data.id,
       });
     }
-  }, [gameState, props.article.fullTitle]);
+  }, [gameState, articleTitle, user.data?.id]);
 
   const saveGameState = (state: SavedGameState) => {
     try {
-      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+      localStorage.setItem(
+        getGameStateKey(state.userId),
+        JSON.stringify(state)
+      );
     } catch (error) {
       console.error("Error saving game state:", error);
     }
   };
 
-  const clearSavedGameState = () => {
+  const clearSavedGameState = (userId: string) => {
     try {
-      localStorage.removeItem(GAME_STATE_KEY);
+      localStorage.removeItem(getGameStateKey(userId));
     } catch (error) {
       console.error("Error clearing game state:", error);
     }
   };
 
-  if (profile.isLoading) return <LoadingSpinner />;
-  if (!profile.data) return redirect("/sign-in");
+  if (user.isLoading) return <LoadingSpinner />;
+  if (!user.data) return redirect("/sign-in");
 
   const calculateScoreBreakdown = (
     hintsUsed: number,
@@ -176,7 +196,7 @@ function Game(props: GameProps) {
       isWin ? "Congratulations! You got it!" : "Better luck next time!"
     );
 
-    if (!profile.data) {
+    if (!user.data) {
       toast.error("Failed to save game result");
       return;
     }
@@ -189,7 +209,7 @@ function Game(props: GameProps) {
         articleTitle: props.article.fullTitle,
         isVictory: isWin,
         score: Math.max(0, Math.min(scoreValue, 100)),
-        userId: profile.data.user_id,
+        userId: user.data.id,
         isUnlimited: props.isUnlimited,
         attempts: validAttempts,
         daily_game_id: props.isUnlimited ? null : props.dailyGameId,

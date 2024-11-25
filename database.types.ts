@@ -9,34 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      badge_profile_junction: {
+      badge_user_junction: {
         Row: {
           badge_id: string
           badge_selected: boolean | null
           created_at: string
           id: string
-          profile_id: string
+          user_id: string
         }
         Insert: {
           badge_id: string
           badge_selected?: boolean | null
           created_at?: string
           id?: string
-          profile_id: string
+          user_id: string
         }
         Update: {
           badge_id?: string
           badge_selected?: boolean | null
           created_at?: string
           id?: string
-          profile_id?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "badge_profile_junction_badge_id_fkey"
+            foreignKeyName: "badge_user_junction_badge_id_fkey"
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "badge_user_junction_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -134,51 +141,19 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          avatar: string | null
-          bio: string | null
-          user_id: string
-          username: string
-        }
-        Insert: {
-          avatar?: string | null
-          bio?: string | null
-          user_id: string
-          username: string
-        }
-        Update: {
-          avatar?: string | null
-          bio?: string | null
-          user_id?: string
-          username?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       unlimited_games: {
         Row: {
           article_title: string | null
-          created_at: string | null
           id: string
           user_id: string
         }
         Insert: {
           article_title?: string | null
-          created_at?: string | null
           id?: string
           user_id: string
         }
         Update: {
           article_title?: string | null
-          created_at?: string | null
           id?: string
           user_id?: string
         }
@@ -194,25 +169,34 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar: string | null
+          bio: string | null
           created_at: string | null
           email: string
           id: string
           is_admin: boolean | null
           is_premium: boolean | null
+          username: string | null
         }
         Insert: {
+          avatar?: string | null
+          bio?: string | null
           created_at?: string | null
           email: string
           id?: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          username?: string | null
         }
         Update: {
+          avatar?: string | null
+          bio?: string | null
           created_at?: string | null
           email?: string
           id?: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          username?: string | null
         }
         Relationships: []
       }

@@ -23,7 +23,7 @@ export async function getAllExtraGameResults(): Promise<
 > {
   const supabase = createClient();
   const { data: extraGamesData, error: gameError } = await supabase
-    .from("extra_games")
+    .from("unlimited_games")
     .select("*");
 
   if (gameError) {
@@ -73,23 +73,12 @@ export async function saveGameResult({
       daily_game_id: daily_game_id ?? null,
     };
 
-    // First, insert the game result
-    const { error: gameResultError } = await supabase
-      .from("game_results")
-      .insert(gameResult);
-
-    if (gameResultError) {
-      console.error("Game result error details:", gameResultError);
-      throw new Error(`Error saving game result: ${gameResultError.message}`);
-    }
-
     // If this is an unlimited game, also add it to the unlimited_games table
     if (isUnlimited) {
       const unlimitedGame = {
         article_title: articleTitle,
         user_id: userId,
         created_at: new Date().toISOString(),
-        attempts: normalizedAttempts,
       };
 
       const { error: unlimitedGameError } = await supabase
@@ -101,6 +90,16 @@ export async function saveGameResult({
           `Error saving unlimited game: ${unlimitedGameError.message}`
         );
       }
+    }
+
+    // First, insert the game result
+    const { error: gameResultError } = await supabase
+      .from("game_results")
+      .insert(gameResult);
+
+    if (gameResultError) {
+      console.error("Game result error details:", gameResultError);
+      throw new Error(`Error saving game result: ${gameResultError.message}`);
     }
   } catch (error) {
     console.error("Error in saveGameResult:", error);

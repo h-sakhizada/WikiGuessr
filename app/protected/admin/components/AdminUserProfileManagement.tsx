@@ -1,27 +1,27 @@
 "use client";
 
-import { deleteProfile, togglePremium } from "@/actions/profile-actions";
+import { deleteUser, togglePremium } from "@/actions/user-actions";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTable } from "@/components/ui/data-table";
-import { useAllProfiles } from "@/hooks/useProfile";
-import { ProfileWithUser } from "@/types";
+import { useAllUsers } from "@/hooks/useUser";
+import { User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 const AdminUserManagement = () => {
-  const { data: profiles, isLoading, refetch } = useAllProfiles();
+  const { data: users, isLoading, refetch } = useAllUsers();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [selectedProfileIds, setSelectedProfileIds] = useState<string[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
 
   if (isLoading) return <div>Loading...</div>;
-  if (!profiles) return <div>No profiles found</div>;
+  if (!users) return <div>No users found</div>;
 
   const handleDeleteUser = async (userId: string) => {
-    const success = await deleteProfile(userId);
+    const success = await deleteUser(userId);
     if (success) {
       refetch();
       setConfirmDeleteId(null);
@@ -33,23 +33,23 @@ const AdminUserManagement = () => {
   const handleTogglePremium = async (userId: string, isPremium: boolean) => {
     const success = await togglePremium(userId, isPremium);
     if (success) {
-      refetch(); // Refresh the profiles to show updated status
+      refetch(); // Refresh the users to show updated status
     } else {
       console.error("Failed to update premium status");
     }
   };
 
   const handleDeleteSelectedUsers = async () => {
-    const nonAdminIds = selectedProfileIds.filter((id) =>
-      profiles.find((profile) => profile.id === id && !profile.is_admin)
+    const nonAdminIds = selectedUserIds.filter((id) =>
+      users.find((user) => user.id === id && !user.is_admin)
     );
 
-    const deletePromises = nonAdminIds.map((id) => deleteProfile(id));
+    const deletePromises = nonAdminIds.map((id) => deleteUser(id));
     const results = await Promise.all(deletePromises);
 
     if (results.every((success) => success)) {
       refetch();
-      setSelectedProfileIds([]); // Clear selected IDs after deletion
+      setSelectedUserIds([]); // Clear selected IDs after deletion
     } else {
       console.error("Failed to delete some users");
     }
@@ -58,31 +58,29 @@ const AdminUserManagement = () => {
   };
 
   const toggleSelectAll = (checked: boolean) => {
-    const selectableIds = profiles
-      .filter((profile) => !profile.is_admin)
-      .map((profile) => profile.id);
-    setSelectedProfileIds(checked ? selectableIds : []);
+    const selectableIds = users
+      .filter((user) => !user.is_admin)
+      .map((user) => user.id);
+    setSelectedUserIds(checked ? selectableIds : []);
   };
 
   const toggleSelectRow = (id: string, checked: boolean) => {
-    const isSelectable = profiles.find(
-      (profile) => profile.id === id && !profile.is_admin
-    );
-    setSelectedProfileIds((prevSelected) =>
+    const isSelectable = users.find((user) => user.id === id && !user.is_admin);
+    setSelectedUserIds((prevSelected) =>
       checked && isSelectable
         ? [...prevSelected, id]
         : prevSelected.filter((selectedId) => selectedId !== id)
     );
   };
 
-  const columns: ColumnDef<ProfileWithUser>[] = [
+  const columns: ColumnDef<User>[] = [
     {
       id: "select",
       header: () => (
         <Checkbox
           checked={
-            selectedProfileIds.length ===
-            profiles.filter((profile) => !profile.is_admin).length
+            selectedUserIds.length ===
+            users.filter((user) => !user.is_admin).length
           }
           onCheckedChange={(checked) => toggleSelectAll(!!checked)}
           aria-label="Select all"
@@ -90,7 +88,7 @@ const AdminUserManagement = () => {
       ),
       cell: ({ row }) => (
         <Checkbox
-          checked={selectedProfileIds.includes(row.original.id)}
+          checked={selectedUserIds.includes(row.original.id)}
           onCheckedChange={(checked) =>
             toggleSelectRow(row.original.id, !!checked)
           }
@@ -138,15 +136,15 @@ const AdminUserManagement = () => {
       accessorKey: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const profileId = row.original.id;
+        const userId = row.original.id;
         const isAdmin = row.original.is_admin;
 
-        return confirmDeleteId === profileId ? (
+        return confirmDeleteId === userId ? (
           <div className="flex space-x-2">
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleDeleteUser(profileId)}
+              onClick={() => handleDeleteUser(userId)}
             >
               Confirm
             </Button>
@@ -163,7 +161,7 @@ const AdminUserManagement = () => {
             variant="destructive"
             size="icon"
             title={isAdmin ? "Admin users cannot be deleted" : "Delete User"}
-            onClick={() => !isAdmin && setConfirmDeleteId(profileId)}
+            onClick={() => !isAdmin && setConfirmDeleteId(userId)}
             disabled={isAdmin ?? undefined} // Disable button if the user is an admin
           >
             <Trash2 className="h-4 w-4" />
@@ -176,15 +174,15 @@ const AdminUserManagement = () => {
   return (
     <div>
       <Breadcrumb />
-      <h1 className="text-2xl font-bold mb-6">User Profile Management</h1>
+      <h1 className="text-2xl font-bold mb-6">User Management</h1>
 
-      <DataTable columns={columns} data={profiles} />
+      <DataTable columns={columns} data={users} />
 
-      {selectedProfileIds.length > 0 &&
+      {selectedUserIds.length > 0 &&
         (confirmDeleteSelected ? (
           <div className="flex space-x-2 mb-4">
             <Button variant="destructive" onClick={handleDeleteSelectedUsers}>
-              Confirm Delete Selected ({selectedProfileIds.length})
+              Confirm Delete Selected ({selectedUserIds.length})
             </Button>
             <Button
               variant="secondary"
@@ -199,7 +197,7 @@ const AdminUserManagement = () => {
             onClick={() => setConfirmDeleteSelected(true)}
             className="mb-4"
           >
-            Delete Selected ({selectedProfileIds.length})
+            Delete Selected ({selectedUserIds.length})
           </Button>
         ))}
     </div>

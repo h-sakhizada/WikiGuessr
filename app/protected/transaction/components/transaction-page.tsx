@@ -1,11 +1,11 @@
 "use client";
 import LoadingSpinner from "@/components/loading-spinner";
-import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import { redirect } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 
 export default function TransactionClientPage() {
-  const user = useProfile();
+  const user = useUser();
 
   if (user.isLoading) {
     return <LoadingSpinner />;

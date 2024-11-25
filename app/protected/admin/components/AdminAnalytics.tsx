@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import UserAnalyticsOverview from "../analytics/components/overview";
-import { useAllProfiles } from "@/hooks/useProfile";
+import { useAllUsers } from "@/hooks/useUser";
 import { useAllGameResults } from "@/hooks/useAllGames";
 import { useAllBadges } from "@/hooks/useBadge";
 import { useAllExtraGames } from "@/hooks/useAllExtraGames";
@@ -25,16 +25,14 @@ import Breadcrumb from "@/components/custom/Breadcrumbs";
  */
 
 const AdminAnalyticsManagement = () => {
-  const { data: profiles } = useAllProfiles();
+  const { data: users } = useAllUsers();
   const { data: games } = useAllGameResults();
   const { data: badges } = useAllBadges();
   const { data: extraGames } = useAllExtraGames();
 
-  const totalUsers = profiles != null ? profiles.length : 0;
+  const totalUsers = users != null ? users.length : 0;
   const premiumUsers =
-    profiles != null
-      ? profiles.filter((profile) => profile.is_premium).length
-      : 0;
+    users != null ? users.filter((user) => user.is_premium).length : 0;
   const nonPremiumUsers = totalUsers - premiumUsers;
   const premiumPercentage =
     totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : 0;
@@ -104,7 +102,7 @@ const AdminAnalyticsManagement = () => {
             </div>
           </TabsContent>
         </Tabs>
-        <UserAnalyticsOverview users={profiles || []} />
+        <UserAnalyticsOverview users={users || []} />
       </div>
     </>
   );

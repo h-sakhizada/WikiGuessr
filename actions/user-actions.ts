@@ -1,32 +1,21 @@
 "use server";
-import { Profile, User } from "@/types";
+import { User } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
-//  Actions to perform CRUD operations on profiles in supabase.
+//  Actions to perform CRUD operations on users in supabase.
 //------------------------------------------------------------------------------------------
-export async function getUserAndProfile(
-  uuid?: string
-): Promise<(Profile & User) | null> {
+export async function getUser(uuid?: string): Promise<User | null> {
   const supabase = createClient();
 
   if (!uuid) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     uuid = user?.id;
   }
 
   if (!uuid) return null;
-  const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", uuid)
-    .maybeSingle();
-
-  if (profileError) {
-    console.error("Error fetching profile:", profileError);
-    throw profileError;
-  }
 
   const { data: userData, error: userError } = await supabase
     .from("users")
@@ -39,20 +28,11 @@ export async function getUserAndProfile(
     throw userError;
   }
 
-  return { ...profileData, ...userData };
+  return userData;
 }
 
-export async function getAllUsersAndProfiles(): Promise<(Profile & User)[]> {
+export async function getAllUsers(): Promise<User[]> {
   const supabase = createClient();
-
-  const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("*");
-
-  if (profileError) {
-    console.error("Error fetching profiles:", profileError);
-    throw profileError;
-  }
 
   const { data: userData, error: userError } = await supabase
     .from("users")
@@ -63,19 +43,10 @@ export async function getAllUsersAndProfiles(): Promise<(Profile & User)[]> {
     throw userError;
   }
 
-  // Merge the profile and user data based on user_id/id
-  const mergedData = profileData.map((profile) => {
-    const matchingUser = userData.find((user) => user.id === profile.user_id);
-    return {
-      ...profile,
-      ...matchingUser,
-    };
-  });
-
-  return mergedData as (Profile & User)[];
+  return userData;
 }
 
-export async function deleteProfile(uuid?: string): Promise<boolean> {
+export async function deleteUser(uuid?: string): Promise<boolean> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -90,49 +61,37 @@ export async function deleteProfile(uuid?: string): Promise<boolean> {
     return false;
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .delete()
-    .eq("user_id", uuid);
+  const { error } = await supabase.from("users").delete().eq("id", uuid);
 
   if (error) {
-    console.error("Error deleting profile:", error);
+    console.error("Error deleting user:", error);
     return false;
   }
 
   return true;
 }
 
-export async function editProfile(profile: Profile): Promise<Profile> {
+export async function editUser(user: Partial<User>): Promise<User> {
   const supabase = createClient();
 
-  // Only include the fields that are present in profiles table
-  const updateData = {
-    user_id: profile.user_id,
-    username: profile.username,
-    avatar: profile.avatar,
-    bio: profile.bio,
-  };
+  // Only include the fields that are present in users table
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert(updateData)
-    .single();
+  const { data, error } = await supabase.from("users").upsert(user).single();
 
   if (error) {
-    console.error("Error updating profile:", error);
+    console.error("Error updating user:", error);
     throw error;
   }
 
-  return data as Profile;
+  return data as User;
 }
 
-//  Helper actions to modify specific columns in the profile table.
+//  Helper actions to modify specific columns in the user table.
 //------------------------------------------------------------------------------------------
 
 // Premium / Free Helper Methods
 //-------------------------------------------------------
-export async function setProfileToPremium(uuid?: string): Promise<void> {
+export async function setUserToPremium(uuid?: string): Promise<void> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -150,12 +109,12 @@ export async function setProfileToPremium(uuid?: string): Promise<void> {
     .eq("id", uuid);
 
   if (error) {
-    console.error("Error setting profile to premium:", error);
+    console.error("Error setting user to premium:", error);
     throw error;
   }
 }
 
-export async function setProfileToFree(uuid?: string): Promise<void> {
+export async function setUserToFree(uuid?: string): Promise<void> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -173,7 +132,7 @@ export async function setProfileToFree(uuid?: string): Promise<void> {
     .eq("id", uuid);
 
   if (error) {
-    console.error("Error setting profile to free:", error);
+    console.error("Error setting user to free:", error);
     throw error;
   }
 }
@@ -197,7 +156,7 @@ export async function togglePremium(
   return true;
 }
 
-// Badge_Profile helper function to change selected badge
+// Badge_User helper function to change selected badge
 export async function setSelectedBadge(badgeId: string): Promise<void> {
   const supabase = createClient();
 
@@ -207,9 +166,9 @@ export async function setSelectedBadge(badgeId: string): Promise<void> {
   var userId = user?.id;
 
   const { error: resetError } = await supabase
-    .from("badge_profile_junction")
+    .from("badge_user_junction")
     .update({ badge_selected: false })
-    .eq("profile_id", userId);
+    .eq("id", userId);
 
   if (resetError) {
     console.error("Error resetting badge selection:", resetError);
@@ -217,9 +176,9 @@ export async function setSelectedBadge(badgeId: string): Promise<void> {
   }
 
   const { error, data } = await supabase
-    .from("badge_profile_junction")
+    .from("badge_user_junction")
     .update({ badge_selected: true })
-    .match({ badge_id: badgeId, profile_id: userId })
+    .match({ badge_id: badgeId, user_id: userId })
     .single();
 
   if (error) {
@@ -239,9 +198,9 @@ export async function getSelectedBadge(): Promise<string | null> {
   if (!userId) return null; // No user is signed in
 
   const { data, error } = await supabase
-    .from("badge_profile_junction")
+    .from("badge_user_junction")
     .select("badge_id")
-    .eq("profile_id", userId)
+    .eq("user_id", userId)
     .eq("badge_selected", true)
     .single();
 

@@ -1,11 +1,11 @@
 "use client";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import LoadingSpinner from "@/components/loading-spinner";
-import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import { redirect } from "next/navigation";
 
 export default function StatisticsPage() {
-  const { data: user, isLoading } = useProfile();
+  const { data: user, isLoading } = useUser();
 
   if (isLoading) return <LoadingSpinner />;
   if (!user) return redirect("/sign-in");
