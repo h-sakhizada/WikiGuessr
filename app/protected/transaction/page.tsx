@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { setUserToPremium } from "@/actions/user-actions";
+import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 export default function TransactionClientPage() {
   const router = useRouter(); // Initialize router for navigation
@@ -108,106 +109,109 @@ export default function TransactionClientPage() {
   };
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
-      <header className="text-center mb-2">
-        <h1 className="text-2xl font-bold">Transaction Page</h1>
-      </header>
+    <>
+      <Breadcrumb />
+      <div className="flex-1 w-full flex flex-col gap-3 p-3 sm:p-4 max-w-md mx-auto">
+        <header className="text-center mb-2">
+          <h1 className="text-2xl font-bold">Transaction Page</h1>
+        </header>
 
-      {/* Display default image */}
-      <div className="mb-4 text-center">
-        <img
-          src="/assets/mcvisa.png" // Path to the renamed default image
-          alt="Default Image"
-          className="mx-auto w-32 h-32 object-cover"
-        />
-      </div>
-
-      {/* Credit Card Input */}
-      <div className="mb-4">
-        <label
-          htmlFor="creditCard"
-          className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
-        >
-          Card Number
-        </label>
-        <Input
-          id="creditCard"
-          type="text"
-          placeholder="Enter 16-digit Credit Card Number"
-          value={creditCard}
-          onChange={handleCreditCardChange}
-          className="mb-1"
-        />
-        {errors.creditCard && (
-          <p className="text-red-500 text-sm">{errors.creditCard}</p>
-        )}
-      </div>
-
-      {/* CVC Input */}
-      <div className="mb-4">
-        <label
-          htmlFor="cvc"
-          className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
-        >
-          CVC Number
-        </label>
-        <Input
-          id="cvc"
-          type="text"
-          placeholder="Enter 3-digit CVC"
-          value={cvc}
-          onChange={handleCVCChange}
-          className="mb-1"
-        />
-        {errors.cvc && <p className="text-red-500 text-sm">{errors.cvc}</p>}
-      </div>
-
-      {/* Expiry Date Input */}
-      <div className="mb-4">
-        <label
-          htmlFor="expiryDate"
-          className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
-        >
-          Card Expiration Date
-        </label>
-        <Input
-          id="expiryDate"
-          type="text"
-          placeholder="MM/YY"
-          value={expiryDate}
-          onChange={handleExpiryDateChange}
-          className="mb-1"
-        />
-        {errors.expiryDate && (
-          <p className="text-red-500 text-sm">{errors.expiryDate}</p>
-        )}
-      </div>
-
-      {/* Submit Button */}
-      <Button onClick={handleSubmit} className="mb-2">
-        Submit Payment
-      </Button>
-
-      {/* Submit Error Message */}
-      {submitError && (
-        <p className="text-red-500 text-sm text-center">{submitError}</p>
-      )}
-
-      {/* Success Message and Return Button */}
-      {isSubmitted && (
-        <div className="text-center mt-4">
-          <p className="text-green-500 text-lg font-medium">
-            Payment Submitted Successfully! You Are Now A Premium User!
-          </p>
-          <Button
-            variant="secondary"
-            onClick={() => router.back()}
-            className="mt-3"
-          >
-            Return to Previous Page
-          </Button>
+        {/* Display default image */}
+        <div className="mb-4 text-center">
+          <img
+            src="/assets/mcvisa.png" // Path to the renamed default image
+            alt="Default Image"
+            className="mx-auto w-32 h-32 object-cover"
+          />
         </div>
-      )}
-    </div>
+
+        {/* Credit Card Input */}
+        <div className="mb-4">
+          <label
+            htmlFor="creditCard"
+            className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
+          >
+            Card Number
+          </label>
+          <Input
+            id="creditCard"
+            type="text"
+            placeholder="Enter 16-digit Credit Card Number"
+            value={creditCard}
+            onChange={handleCreditCardChange}
+            className="mb-1"
+          />
+          {errors.creditCard && (
+            <p className="text-red-500 text-sm">{errors.creditCard}</p>
+          )}
+        </div>
+
+        {/* CVC Input */}
+        <div className="mb-4">
+          <label
+            htmlFor="cvc"
+            className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
+          >
+            CVC Number
+          </label>
+          <Input
+            id="cvc"
+            type="text"
+            placeholder="Enter 3-digit CVC"
+            value={cvc}
+            onChange={handleCVCChange}
+            className="mb-1"
+          />
+          {errors.cvc && <p className="text-red-500 text-sm">{errors.cvc}</p>}
+        </div>
+
+        {/* Expiry Date Input */}
+        <div className="mb-4">
+          <label
+            htmlFor="expiryDate"
+            className="block text-sm font-medium mb-1 text-black dark:text-white" // Text changes for theme
+          >
+            Card Expiration Date
+          </label>
+          <Input
+            id="expiryDate"
+            type="text"
+            placeholder="MM/YY"
+            value={expiryDate}
+            onChange={handleExpiryDateChange}
+            className="mb-1"
+          />
+          {errors.expiryDate && (
+            <p className="text-red-500 text-sm">{errors.expiryDate}</p>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <Button onClick={handleSubmit} className="mb-2">
+          Submit Payment
+        </Button>
+
+        {/* Submit Error Message */}
+        {submitError && (
+          <p className="text-red-500 text-sm text-center">{submitError}</p>
+        )}
+
+        {/* Success Message and Return Button */}
+        {isSubmitted && (
+          <div className="text-center mt-4">
+            <p className="text-green-500 text-lg font-medium">
+              Payment Submitted Successfully! You Are Now A Premium User!
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => router.back()}
+              className="mt-3"
+            >
+              Return to Previous Page
+            </Button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

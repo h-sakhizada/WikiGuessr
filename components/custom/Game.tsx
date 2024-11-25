@@ -381,7 +381,7 @@ function Game(props: GameProps) {
                   type="text"
                   value={guess}
                   onChange={(e) => setGuess(e.target.value)}
-                  placeholder="Enter your guess..."
+                  placeholder={gameState.isGameOver ? "Game Over. Thanks for playing 😊" : "Enter your guess..."}
                   className="flex-grow text-lg"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
