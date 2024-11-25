@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Award, Medal, Trophy } from "lucide-react";
-
 import LoadingSpinner from "@/components/loading-spinner";
 import {
   useAlltimeDailyLeaderboard,
@@ -32,11 +31,11 @@ const LeaderboardTable = ({
     <table className="w-full text-sm text-left">
       <thead className="text-xs uppercase bg-secondary/20">
         <tr>
-          <th className="px-6 py-3">Rank</th>
-          <th className="px-6 py-3">Player</th>
-          <th className="px-6 py-3">Score</th>
-          <th className="px-6 py-3">Games</th>
-          {showAverage && <th className="px-6 py-3">Avg</th>}
+          <th className="px-2 sm:px-6 py-3">Rank</th>
+          <th className="px-2 sm:px-6 py-3">Player</th>
+          <th className="px-2 sm:px-6 py-3">Score</th>
+          <th className="px-2 sm:px-6 py-3 table-cell">Games</th>
+          {showAverage && <th className="px-2 sm:px-6 py-3 table-cell">Avg</th>}
         </tr>
       </thead>
       <tbody>
@@ -45,19 +44,19 @@ const LeaderboardTable = ({
             key={entry.user_id}
             className="border-b hover:bg-secondary/10 transition-colors"
           >
-            <td className="px-6 py-4 flex items-center gap-2">
+            <td className="px-2 sm:px-6 py-4 flex items-center gap-2 text-xs sm:text-sm">
               {index === 0 && <Trophy className="h-4 w-4 text-yellow-500" />}
               {index === 1 && <Medal className="h-4 w-4 text-gray-400" />}
               {index === 2 && <Award className="h-4 w-4 text-amber-600" />}
               {index + 1}
             </td>
-            <td className="px-6 py-4 font-medium">{entry.username}</td>
-            <td className="px-6 py-4">
+            <td className="px-2 sm:px-6 py-4 font-medium text-xs sm:text-sm">{entry.username}</td>
+            <td className="px-2 sm:px-6 py-4 text-xs sm:text-sm">
               {Math.round(entry.score).toLocaleString()}
             </td>
-            <td className="px-6 py-4">{entry.games_played}</td>
+            <td className="px-2 sm:px-6 py-4 table-cell">{entry.games_played}</td>
             {showAverage && (
-              <td className="px-6 py-4">
+              <td className="px-2 sm:px-6 py-4 table-cell">
                 {Math.round(entry.avg_score).toLocaleString()}
               </td>
             )}
@@ -70,11 +69,11 @@ const LeaderboardTable = ({
 
 const StatsCard = ({ title, value }: { title: string; value: number }) => (
   <Card>
-    <CardHeader>
-      <CardTitle className="text-lg">{title}</CardTitle>
+    <CardHeader className="p-4 sm:p-6">
+      <CardTitle className="text-sm sm:text-lg">{title}</CardTitle>
     </CardHeader>
-    <CardContent>
-      <p className="text-2xl font-bold">{value.toLocaleString()}</p>
+    <CardContent className="p-4 sm:p-6">
+      <p className="text-lg sm:text-2xl font-bold">{value.toLocaleString()}</p>
     </CardContent>
   </Card>
 );
@@ -99,12 +98,12 @@ const LeaderboardTabContent = ({
   if (!entries || entries.length === 0)
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center my-12 p-8 border border-white rounded-md">
+          <div className="flex flex-col items-center my-6 sm:my-12 p-4 sm:p-8 border border-white rounded-md">
             <p>No Leaderboard Data Available.</p>
             <p className="text-sm">Check back later for updated results.</p>
           </div>
@@ -114,11 +113,11 @@ const LeaderboardTabContent = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-6">
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription className="text-xs sm:text-sm">{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <LeaderboardTable entries={entries} showAverage={showAverage} />
       </CardContent>
     </Card>
@@ -126,7 +125,6 @@ const LeaderboardTabContent = ({
 };
 
 export default function LeaderboardClientPage() {
-  // Individual data fetching hooks
   const {
     data: dailyData,
     isLoading: isDailyLoading,
@@ -152,22 +150,19 @@ export default function LeaderboardClientPage() {
     isLoading: isAlltimeUnlimitedLoading,
     error: alltimeUnlimitedError,
   } = useAlltimeUnlimitedLeaderboard();
-  const { data: weeklyGames, isLoading: isWeeklyGamesLoading } =
-    useWeeklyGameCounts();
-  const { data: alltimeGames, isLoading: isAlltimeGamesLoading } =
-    useAlltimeGameCounts();
+  const { data: weeklyGames, isLoading: isWeeklyGamesLoading } = useWeeklyGameCounts();
+  const { data: alltimeGames, isLoading: isAlltimeGamesLoading } = useAlltimeGameCounts();
 
-  const isStatsLoading =
-    isWeeklyGamesLoading || isAlltimeGamesLoading || isDailyLoading;
+  const isStatsLoading = isWeeklyGamesLoading || isAlltimeGamesLoading || isDailyLoading;
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-start mb-8">Leaderboards</h1>
+    <div className="container mx-auto py-4 sm:py-8 px-2 sm:px-4">
+      <h1 className="text-2xl sm:text-4xl font-bold text-start mb-4 sm:mb-8">Leaderboards</h1>
 
       {isStatsLoading ? (
         <LoadingSpinner />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <StatsCard
             title="Weekly Games Played"
             value={weeklyGames?.total || 0}
@@ -184,14 +179,12 @@ export default function LeaderboardClientPage() {
       )}
 
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-          <TabsTrigger value="daily">Today's Daily</TabsTrigger>
-          <TabsTrigger value="weekly-daily">Weekly Daily</TabsTrigger>
-          <TabsTrigger value="weekly-unlimited">Weekly Unlimited</TabsTrigger>
-          <TabsTrigger value="alltime-daily">All-time Daily</TabsTrigger>
-          <TabsTrigger value="alltime-unlimited">
-            All-time Unlimited
-          </TabsTrigger>
+        <TabsList className="grid w-full h-fit grid-cols-1 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="daily" className="text-xs sm:text-sm">Today's Daily</TabsTrigger>
+          <TabsTrigger value="weekly-daily" className="text-xs sm:text-sm">Weekly Daily</TabsTrigger>
+          <TabsTrigger value="weekly-unlimited" className="text-xs sm:text-sm">Weekly Unlimited</TabsTrigger>
+          <TabsTrigger value="alltime-daily" className="text-xs sm:text-sm">All-time Daily</TabsTrigger>
+          <TabsTrigger value="alltime-unlimited" className="text-xs sm:text-sm">All-time Unlimited</TabsTrigger>
         </TabsList>
 
         <TabsContent value="daily">

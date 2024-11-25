@@ -17,8 +17,10 @@ import {
   XCircle,
   Lightbulb,
   Scale,
+  ExternalLink,
 } from "lucide-react";
 import Confetti from "react-confetti";
+import { useRouter } from "next/navigation";
 
 interface GameStats {
   gamesPlayed: number;
@@ -115,6 +117,8 @@ export const GameResultDialog = ({
     minutes: number;
     seconds: number;
   }>({ hours: 0, minutes: 0, seconds: 0 });
+
+  const router = useRouter();
 
   setInterval(() => {
     const now = new Date();
@@ -235,12 +239,20 @@ export const GameResultDialog = ({
 
         <div className="flex gap-2 justify-center mt-6">
           <Button
+            onClick={() => router.push("/protected/leaderboard")}
+            variant="outline"
+            className="group"
+            >
+              Leaderboard
+              <BarChart2 className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+            </Button>
+          <Button
             onClick={() => window.open(article.url, "_blank")}
             variant="outline"
             className="group"
           >
             Read Article
-            <BarChart2 className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <ExternalLink className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
           </Button>
         </div>
 
