@@ -7,7 +7,7 @@ import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Flag, Lightbulb, RefreshCw, Search, Trophy } from "lucide-react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import LoadingSpinner from "../loading-spinner";
 import { Button } from "../ui/button";
@@ -40,16 +40,45 @@ interface ScoreBreakdown {
   similarityMultiplier: number;
   finalScore: number;
 }
+interface SavedGameState extends GameState {
+  articleTitle: string;
+  timestamp: number;
+}
+
+const GAME_STATE_KEY = "wikigame_state";
+const GAME_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 function Game(props: GameProps) {
+  const getSavedGameState = (): SavedGameState | null => {
+    try {
+      const saved = localStorage.getItem(GAME_STATE_KEY);
+      if (!saved) return null;
+
+      const state = JSON.parse(saved) as SavedGameState;
+
+      // Check if the saved state has expired
+      if (Date.now() - state.timestamp > GAME_EXPIRY_TIME) {
+        clearSavedGameState();
+        return null;
+      }
+
+      return state;
+    } catch (error) {
+      console.error("Error loading game state:", error);
+      return null;
+    }
+  };
+
   const profile = useProfile();
-  const [gameState, setGameState] = useState<GameState>({
-    currentHint: 1,
-    attempts: 0,
-    score: 100,
-    isGameOver: false,
-    isVictory: false,
-  });
+  const [gameState, setGameState] = useState<GameState>(
+    getSavedGameState() ?? {
+      currentHint: 1,
+      attempts: 0,
+      score: 100,
+      isGameOver: false,
+      isVictory: false,
+    }
+  );
   const [guess, setGuess] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [victoryMessage, setVictoryMessage] = useState("");
@@ -58,6 +87,50 @@ function Game(props: GameProps) {
     null
   );
   const fuzzyMatcher = new FuzzyMatcher();
+
+  // Load saved game state on component mount
+  useEffect(() => {
+    const savedState = getSavedGameState();
+    if (savedState && savedState.articleTitle === props.article.fullTitle) {
+      setGameState({
+        currentHint: savedState.currentHint,
+        attempts: savedState.attempts,
+        score: savedState.score,
+        isGameOver: savedState.isGameOver,
+        isVictory: savedState.isVictory,
+      });
+    } else {
+      // Clear expired or irrelevant saved state
+      clearSavedGameState();
+    }
+  }, [props.article.fullTitle]);
+
+  // Save game state whenever it changes
+  useEffect(() => {
+    if (props.article.fullTitle) {
+      saveGameState({
+        ...gameState,
+        articleTitle: props.article.fullTitle,
+        timestamp: Date.now(),
+      });
+    }
+  }, [gameState, props.article.fullTitle]);
+
+  const saveGameState = (state: SavedGameState) => {
+    try {
+      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error("Error saving game state:", error);
+    }
+  };
+
+  const clearSavedGameState = () => {
+    try {
+      localStorage.removeItem(GAME_STATE_KEY);
+    } catch (error) {
+      console.error("Error clearing game state:", error);
+    }
+  };
 
   if (profile.isLoading) return <LoadingSpinner />;
   if (!profile.data) return redirect("/sign-in");
@@ -234,6 +307,14 @@ function Game(props: GameProps) {
     }
   };
 
+  const getVictoryMessage = () => {
+    if (victoryMessage) return victoryMessage;
+    if (gameState.isVictory) {
+      return "Congratulations! You got it!";
+    }
+    return "Better luck next time!";
+  };
+
   return (
     <div className="flex flex-col">
       <Toaster />
@@ -247,7 +328,7 @@ function Game(props: GameProps) {
           fullTitle: props.article?.fullTitle || "",
           url: props.article?.url || "",
         }}
-        victoryMessage={victoryMessage}
+        victoryMessage={getVictoryMessage()}
         scoreBreakdown={scoreBreakdown}
       />
       <main className="flex-1 container sm:mx-auto sm:px-4 py-8 px-0">
