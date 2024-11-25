@@ -1,10 +1,10 @@
 "use server";
-import { Badge, ProfileBadges } from "@/types";
+import { Badge, UserBadges } from "@/types";
 import { createClient } from "@/utils/supabase/server";
 
 export async function getBadgesForUser(
   uuid?: string
-): Promise<ProfileBadges | null> {
+): Promise<UserBadges | null> {
   const supabase = createClient();
 
   if (!uuid) {
@@ -17,9 +17,9 @@ export async function getBadgesForUser(
   if (!uuid) return null;
 
   const { data, error } = await supabase
-    .from("badge_profile_junction")
+    .from("badge_user_junction")
     .select("*, badge:badge_id(*)")
-    .eq("profile_id", uuid);
+    .eq("user_id", uuid);
 
   if (error) {
     console.error("Error fetching badges:", error);
@@ -28,10 +28,10 @@ export async function getBadgesForUser(
 
   if (!data || data.length === 0) return null;
 
-  const profileBadges: ProfileBadges = {
+  const userBadges: UserBadges = {
     meta: data.map((item) => ({
       id: item.id,
-      profile_id: item.profile_id,
+      user_id: item.user_id,
       badge_id: item.badge_id,
       created_at: item.created_at,
       badge_selected: item.badge_selected,
@@ -41,7 +41,7 @@ export async function getBadgesForUser(
       .filter((badge): badge is Badge => badge !== null),
   };
 
-  return profileBadges;
+  return userBadges;
 }
 
 export async function getAllBadges(): Promise<Badge[] | null> {
@@ -75,8 +75,8 @@ export async function addBadgeToUserCollection(
   if (!uuid) return false;
 
   const { error } = await supabase
-    .from("badge_profile_junction")
-    .insert({ badge_id: badgeId, profile_id: uuid, badge_selected: false });
+    .from("badge_user_junction")
+    .insert({ badge_id: badgeId, user_id: uuid, badge_selected: false });
 
   if (error) {
     console.error("Error processing game results:", error);

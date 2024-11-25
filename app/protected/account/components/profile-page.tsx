@@ -1,14 +1,13 @@
 "use client";
 import {
-  editProfile,
-  setProfileToFree,
+  editUser,
+  setUserToFree,
   setSelectedBadge,
   getSelectedBadge,
-} from "@/actions/profile-actions";
+} from "@/actions/user-actions";
 import { Button } from "@/components/ui/button";
-import { useProfile } from "@/hooks/useProfile";
-import { useProfileSelectedBadges } from "@/hooks/useProfileBadge";
-import { Profile } from "@/types";
+import { useUser } from "@/hooks/useUser";
+import { User } from "@/types";
 import {
   Camera,
   LineChart,
@@ -25,10 +24,11 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import BadgeModal from "../../../../components/ui/badgeModal";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
+import { useUserSelectedBadges } from "@/hooks/useBadge";
 
 export default function ProfileClientPage() {
-  const { data: profile, isLoading, refetch } = useProfile();
-  const { data: badgesData } = useProfileSelectedBadges();
+  const { data: user, isLoading, refetch } = useUser();
+  const { data: badgesData } = useUserSelectedBadges();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -44,24 +44,24 @@ export default function ProfileClientPage() {
   };
 
   useEffect(() => {
-    if (profile) {
+    if (user) {
       setAvatarPreview(
-        profile.avatar?.trim() || "/assets/default_profile_img.png"
+        user.avatar?.trim() || "/assets/default_profile_img.png"
       );
     }
 
     fetchEquippedBadge();
-  }, [profile]);
+  }, [user]);
 
   if (isLoading) return <LoadingSpinner />;
-  if (!profile) return redirect("/sign-in");
+  if (!user) return redirect("/sign-in");
 
-  const handleSave = async (field: keyof Profile, value: string) => {
-    if (!profile || profile[field] === value) return;
+  const handleSave = async (field: keyof User, value: string) => {
+    if (!user || user[field] === value) return;
 
     try {
-      const updatedData = { ...profile, [field]: value };
-      await editProfile(updatedData);
+      const updatedData = { ...user, [field]: value };
+      await editUser(updatedData);
       toast.success(`${field} updated successfully!`);
       refetch();
     } catch (error) {
@@ -71,27 +71,27 @@ export default function ProfileClientPage() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e?.target?.files?.[0];
-    if (!file || !profile?.user_id) return;
+    if (!file || !user?.id) return;
 
     const supabase = createClient();
 
     // Define file path using user ID for RLS
     const fileExt = file.name.split(".").pop();
-    const fileName = `${profile.user_id}/${Date.now()}.${fileExt}`;
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
     await toast.promise(
       (async () => {
         try {
           // First, try to delete the old file if it exists
-          if (profile.avatar) {
+          if (user.avatar) {
             try {
-              const oldFilePath = new URL(profile.avatar).pathname
+              const oldFilePath = new URL(user.avatar).pathname
                 .split("/")
                 .pop();
               if (oldFilePath) {
                 await supabase.storage
                   .from("profile_pictures")
-                  .remove([`${profile.user_id}/${oldFilePath}`]);
+                  .remove([`${user.id}/${oldFilePath}`]);
               }
             } catch (error) {
               console.error("No old file to delete or error deleting:", error);
@@ -117,13 +117,13 @@ export default function ProfileClientPage() {
             data: { publicUrl },
           } = supabase.storage.from("profile_pictures").getPublicUrl(fileName);
 
-          // Update user profile with new avatar URL
-          await editProfile({ ...profile, avatar: publicUrl });
+          // Update user user with new avatar URL
+          await editUser({ ...user, avatar: publicUrl });
 
           // Update local preview
           setAvatarPreview(publicUrl);
 
-          // Refresh profile data
+          // Refresh user data
           await refetch();
 
           return publicUrl;
@@ -133,8 +133,8 @@ export default function ProfileClientPage() {
         }
       })(),
       {
-        loading: "Uploading profile picture...",
-        success: "Profile picture updated successfully!",
+        loading: "Uploading picture...",
+        success: "User picture updated successfully!",
         error: (error) =>
           `Upload failed: ${error.message || "Please try again"}`,
       }
@@ -143,8 +143,8 @@ export default function ProfileClientPage() {
 
   const handleAccountTypeChange = async () => {
     try {
-      if (profile.is_premium) {
-        await setProfileToFree();
+      if (user.is_premium) {
+        await setUserToFree();
         toast.success("Account downgraded to free successfully!");
       } else {
         window.location.href = "/protected/transaction";
@@ -279,8 +279,8 @@ export default function ProfileClientPage() {
               />
             </div>
             <div className="text-center mb-4">
-              <h2 className="text-xl font-semibold mb-2">{profile.username}</h2>
-              <p className="text-sm text-gray-500">{profile.email}</p>
+              <h2 className="text-xl font-semibold mb-2">{user.username}</h2>
+              <p className="text-sm text-gray-500">{user.email}</p>
             </div>
             <Link href="/protected/badges">
               <div className="flex items-center justify-start mb-4 gap-2 text-md text-foreground dark:text-primary">
@@ -295,20 +295,20 @@ export default function ProfileClientPage() {
 
           <div className="space-y-6">
             <EditableInput
-              value={profile.username}
+              value={user.username}
               onChange={(value) => handleSave("username", value)}
               label="Username"
               id="username"
               isEditable={true}
             />
             <EditableInput
-              value={profile.email}
+              value={user.email}
               label="Email Address"
               id="email"
               isEditable={false}
             />
             <EditableInput
-              value={profile.bio || "Add your bio here"}
+              value={user.bio || "Add your bio here"}
               onChange={(value) => handleSave("bio", value)}
               label="Your Bio - Brag a little 😊"
               id="bio"
@@ -316,7 +316,7 @@ export default function ProfileClientPage() {
               type="textarea"
             />
             <EditableInput
-              value={profile.is_premium ? "Premium User" : "Free User"}
+              value={user.is_premium ? "Premium User" : "Free User"}
               label="Account Type"
               id="account-type"
               isEditable={false}
@@ -326,17 +326,19 @@ export default function ProfileClientPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
             className="flex-1"
-            onClick={() => (window.location.href = "/protected/statistics")}
+            onClick={() =>
+              (window.location.href = "/protected/account/statistics")
+            }
           >
             <LineChart className="h-4 w-4 mr-2" />
             Personal Statistics
           </Button>
           <Button
             className="flex-1"
-            variant={profile.is_premium ? "outline" : "default"}
+            variant={user.is_premium ? "outline" : "default"}
             onClick={handleAccountTypeChange}
           >
-            {profile.is_premium ? (
+            {user.is_premium ? (
               "Downgrade to Free Account"
             ) : (
               <>

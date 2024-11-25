@@ -40,7 +40,7 @@ const useDailyGame = () => {
           page.infobox(),
         ]);
 
-        return formatWikiHints(summary, related, info);
+        return formatWikiHints(summary, related, info, dailyGame.id);
       } catch (error) {
         console.error("Error fetching daily game:", error);
         throw error;

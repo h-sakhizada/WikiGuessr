@@ -24,16 +24,14 @@ import {
   Upload,
 } from "lucide-react";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/utils/supabase/client";
-
-interface Badge {
-  id: string;
-  created_at: string;
-  icon: string | null;
-  name: string;
-  description: string;
-}
+import {
+  useAllBadges,
+  useAddBadge,
+  useUpdateBadge,
+  useDeleteBadge,
+  useUploadBadge,
+} from "@/hooks/useBadge";
+import { Badge } from "@/types";
 
 // Image upload component with loading state
 const BadgeIconUpload = ({
@@ -207,13 +205,12 @@ const EditableTextareaCell = ({
 };
 
 const AdminBadgeManagement = () => {
-  const supabase = createClient();
-  const queryClient = useQueryClient();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [error, setError] = useState<string | null>(null);
   const [newBadge, setNewBadge] = useState({
     name: "",
     description: "",
+    icon: null,
   });
   const [editingCell, setEditingCell] = useState<{
     id: string;
@@ -221,123 +218,11 @@ const AdminBadgeManagement = () => {
   } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Fetch badges TDO: split to custom hook
-  const { data: badges = [], isLoading } = useQuery({
-    queryKey: ["badges"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("badge")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Badge[];
-    },
-  });
-
-  // Upload mutation TODO: split to custom hook
-  const uploadIcon = useMutation({
-    mutationFn: async ({ file, badgeId }: { file: File; badgeId: string }) => {
-      // First, delete the old icon if it exists
-      const badge = badges.find((b) => b.id === badgeId);
-      if (badge?.icon) {
-        const oldIconPath = new URL(badge.icon).pathname.split("/").pop();
-        if (oldIconPath) {
-          await supabase.storage.from("badges").remove([oldIconPath]);
-        }
-      }
-
-      // Upload new icon
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${badgeId}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("badges")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("badges").getPublicUrl(fileName);
-
-      // Update badge record with new icon URL
-      const { error: updateError } = await supabase
-        .from("badge")
-        .update({ icon: publicUrl })
-        .eq("id", badgeId);
-
-      if (updateError) throw updateError;
-
-      return publicUrl;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["badges"] });
-    },
-    onError: (error) => {
-      console.error("Upload failed:", error);
-      setError("Failed to upload icon");
-    },
-  });
-
-  // Add badge mutation TODO: split to custom hook
-  const addBadge = useMutation({
-    mutationFn: async (badgeData: Partial<Badge>) => {
-      const { data, error } = await supabase
-        .from("badge")
-        .insert([badgeData])
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["badges"] });
-      setNewBadge({ name: "", description: "" });
-    },
-  });
-
-  // Update badge mutation TODO: split to custom hook
-  const updateBadge = useMutation({
-    mutationFn: async ({
-      id,
-      updates,
-    }: {
-      id: string;
-      updates: Partial<Badge>;
-    }) => {
-      const { error } = await supabase
-        .from("badge")
-        .update(updates)
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["badges"] });
-      setEditingCell(null);
-    },
-  });
-
-  // Delete badge mutation TODO: split to custom hook
-  const deleteBadge = useMutation({
-    mutationFn: async (id: string) => {
-      const badge = badges.find((b) => b.id === id);
-      if (badge?.icon) {
-        const iconPath = new URL(badge.icon).pathname.split("/").pop();
-        if (iconPath) {
-          await supabase.storage.from("badges").remove([iconPath]);
-        }
-      }
-      const { error } = await supabase.from("badge").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["badges"] });
-      setDeleteConfirmId(null);
-    },
-  });
+  const { data: badges = [], isLoading } = useAllBadges();
+  const addBadgeMutation = useAddBadge();
+  const updateBadgeMutation = useUpdateBadge();
+  const deleteBadgeMutation = useDeleteBadge();
+  const uploadBadgeMutation = useUploadBadge();
 
   const columnHelper = createColumnHelper<Badge>();
   const columns = [
@@ -359,7 +244,7 @@ const AdminBadgeManagement = () => {
         <BadgeIconUpload
           badge={info.row.original}
           onUpload={async (file) => {
-            await uploadIcon.mutateAsync({
+            await uploadBadgeMutation.mutateAsync({
               file,
               badgeId: info.row.original.id,
             });
@@ -378,7 +263,7 @@ const AdminBadgeManagement = () => {
           <EditableInputCell
             value={info.getValue()}
             onSave={async (value) => {
-              await updateBadge.mutateAsync({
+              await updateBadgeMutation.mutateAsync({
                 id: info.row.original.id,
                 updates: { name: value },
               });
@@ -412,7 +297,7 @@ const AdminBadgeManagement = () => {
           <EditableTextareaCell
             value={info.getValue() || ""}
             onSave={async (value) => {
-              await updateBadge.mutateAsync({
+              await updateBadgeMutation.mutateAsync({
                 id: info.row.original.id,
                 updates: { description: value },
               });
@@ -447,7 +332,7 @@ const AdminBadgeManagement = () => {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => deleteBadge.mutate(id)}
+              onClick={() => deleteBadgeMutation.mutate(id)}
             >
               Confirm
             </Button>
@@ -486,7 +371,8 @@ const AdminBadgeManagement = () => {
     setError(null);
 
     try {
-      await addBadge.mutateAsync(newBadge);
+      await addBadgeMutation.mutateAsync(newBadge);
+      setNewBadge({ name: "", description: "", icon: null });
     } catch (err) {
       setError("Failed to add badge");
     }
@@ -532,8 +418,8 @@ const AdminBadgeManagement = () => {
             placeholder="Description"
             className="flex-1"
           />
-          <Button type="submit" disabled={addBadge.isPending}>
-            {addBadge.isPending ? (
+          <Button type="submit" disabled={addBadgeMutation.isPending}>
+            {addBadgeMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Plus className="h-4 w-4" />

@@ -1,5 +1,5 @@
 "use client";
-import { useProfile } from "@/hooks/useProfile";
+import { useUser } from "@/hooks/useUser";
 import { redirect } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import LoadingSpinner from "@/components/loading-spinner";
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 
 export default function BadgeClientPage() {
-  const user = useProfile();
+  const user = useUser();
   const [allBadges, setAllBadges] = useState<Badge[] | null>(null);
   const [userBadges, setUserBadges] = useState<Badge[] | null>(null);
   const [loading, setLoading] = useState(true);

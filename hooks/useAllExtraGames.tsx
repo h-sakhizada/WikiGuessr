@@ -2,13 +2,13 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllExtraGameResults } from "@/actions/game-actions";
-import { ExtraGame } from "@/types";
+import { UnlimitedGame } from "@/types";
 
 export const useAllExtraGames = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery<
-    ExtraGame[] | null,
+    UnlimitedGame[] | null,
     Error
   >({
     queryKey: ["allExtraGames"],
