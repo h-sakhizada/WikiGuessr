@@ -1,12 +1,10 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllGameResults } from "@/actions/game-actions";
-import { GameResult, Profile, User } from "@/types";
+import { GameResult } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export const useAllGameResults = () => {
-  const queryClient = useQueryClient();
-
   const { data, isLoading, error, refetch } = useQuery<
     GameResult[] | null,
     Error

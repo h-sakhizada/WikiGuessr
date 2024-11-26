@@ -30,30 +30,26 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", authError.message);
   }
 
-  // Step 2: Create profile entry
+  // Step 2: Create user entry
   if (authData.user) {
-    const { error: profileError } = await supabase.from("profile").insert({
+    const { error: userError } = await supabase.from("users").insert({
       id: authData.user.id,
       email: email,
       username: email.split("@")[0],
     });
 
-    if (profileError) {
-      console.error("Profile creation error: " + profileError.message);
-      // If profile creation fails, we might want to delete the auth user
+    if (userError) {
+      console.error("User creation error: " + userError.message);
+      // If user creation fails, we might want to delete the auth user
       // This is optional and depends on your error handling strategy
       await supabase.auth.admin.deleteUser(authData.user.id);
-      return encodedRedirect(
-        "error",
-        "/sign-up",
-        "Failed to create user profile"
-      );
+      return encodedRedirect("error", "/sign-up", "Failed to create user");
     }
   }
 
   return encodedRedirect(
     "success",
-    "/sign-up",
+    "/protected",
     "Thanks for signing up! Please check your email for a verification link."
   );
 };
@@ -72,7 +68,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/");
+  return redirect("/protected");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -124,11 +120,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   }
 
   if (password !== confirmPassword) {
-    encodedRedirect(
-      "error",
-      "/reset-password",
-      "Passwords do not match"
-    );
+    encodedRedirect("error", "/reset-password", "Passwords do not match");
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -136,11 +128,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   });
 
   if (error) {
-    encodedRedirect(
-      "error",
-      "/reset-password",
-      "Password update failed"
-    );
+    encodedRedirect("error", "/reset-password", "Password update failed");
   }
 
   encodedRedirect("success", "/reset-password", "Password updated");

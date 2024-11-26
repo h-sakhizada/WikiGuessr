@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProfileWithUser } from "@/hooks/useAllProfiles";
+import { User } from "@/types";
 
 interface MonthlyStats {
   name: string;
@@ -16,7 +16,7 @@ interface MonthlyStats {
   premium: number;
 }
 
-const UserAnalyticsOverview = ({ users }: { users: ProfileWithUser[] }) => {
+const UserAnalyticsOverview = ({ users }: { users: User[] }) => {
   // Process users data into monthly statistics
   const getMonthlyData = (): MonthlyStats[] => {
     const monthData = new Map<string, { total: number; premium: number }>();

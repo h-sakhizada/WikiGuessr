@@ -17,8 +17,10 @@ import {
   XCircle,
   Lightbulb,
   Scale,
+  ExternalLink,
 } from "lucide-react";
 import Confetti from "react-confetti";
+import { useRouter } from "next/navigation";
 
 interface GameStats {
   gamesPlayed: number;
@@ -73,7 +75,7 @@ const StatBox = ({
   label: string;
   value: number | string;
 }) => (
-  <div className="flex flex-col items-center p-4 bg-secondary/10 rounded-lg">
+  <div className="flex flex-col items-center p-2 bg-secondary/10 ">
     <span className="text-2xl font-bold">{value}</span>
     <span className="text-sm text-muted-foreground">{label}</span>
   </div>
@@ -116,6 +118,8 @@ export const GameResultDialog = ({
     seconds: number;
   }>({ hours: 0, minutes: 0, seconds: 0 });
 
+  const router = useRouter();
+
   setInterval(() => {
     const now = new Date();
     const midnight = new Date(
@@ -148,7 +152,7 @@ export const GameResultDialog = ({
           opacity={0.8}
         />
       )}
-      <DialogContent className="sm:max-w-md ">
+      <DialogContent className="sm:max-w-md gap-0">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-center text-2xl font-bold gap-2">
             {isVictory ? (
@@ -165,10 +169,15 @@ export const GameResultDialog = ({
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
             {isVictory ? (
-              <span>
-                You got it in {numberOfGuesses}{" "}
-                {numberOfGuesses === 1 ? "guess" : "guesses"}!
-              </span>
+              <div className="flex flex-col gap-2 items-center justify-center">
+                <div>
+                  You got it in {numberOfGuesses}{" "}
+                  {numberOfGuesses === 1 ? "guess" : "guesses"}!
+                </div>
+                <div>
+                  The answer was: <strong>{article.fullTitle}</strong>
+                </div>
+              </div>
             ) : (
               <span>
                 The answer was: <strong>{article.fullTitle}</strong>
@@ -223,7 +232,7 @@ export const GameResultDialog = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 my-4">
+        <div className="grid grid-cols-2 gap-4 ">
           <StatBox label="Games Played" value={stats.gamesPlayed} />
           <StatBox
             label="Win Rate"
@@ -233,14 +242,22 @@ export const GameResultDialog = ({
           <StatBox label="Best Streak" value={stats.bestStreak} />
         </div>
 
-        <div className="flex gap-2 justify-center mt-6">
+        <div className="flex gap-2 justify-center mt-4">
+          <Button
+            onClick={() => router.push("/protected/leaderboard")}
+            variant="outline"
+            className="group"
+          >
+            Leaderboard
+            <BarChart2 className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+          </Button>
           <Button
             onClick={() => window.open(article.url, "_blank")}
             variant="outline"
             className="group"
           >
             Read Article
-            <BarChart2 className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <ExternalLink className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
           </Button>
         </div>
 
