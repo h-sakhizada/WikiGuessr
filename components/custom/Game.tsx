@@ -349,6 +349,7 @@ function Game(props: GameProps) {
         }}
         victoryMessage={getVictoryMessage()}
         scoreBreakdown={scoreBreakdown}
+        getNewArticle={props.refetchArticle}
       />
       <main className="flex-1 container sm:mx-auto sm:px-4 py-8 px-0">
         <Card className="mb-6">

@@ -15,6 +15,12 @@ import {
   useUserUnlimitedWins,
 } from "@/hooks/usePersonalStatistics";
 import { useUser } from "@/hooks/useUser";
+import { WikiArticleHints } from "@/utils/wiki_utils";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import {
   BarChart2,
   Brain,
@@ -30,7 +36,6 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import Confetti from "react-confetti";
 import LoadingSpinner, { InlineLoadingSpinner } from "../loading-spinner";
-import { UseQueryResult } from "@tanstack/react-query";
 
 interface GameStats {
   gamesPlayed: number;
@@ -60,6 +65,9 @@ interface GameResultDialogProps {
   };
   victoryMessage: string;
   scoreBreakdown?: ScoreBreakdown | null;
+  getNewArticle: (
+    options?: RefetchOptions
+  ) => Promise<QueryObserverResult<WikiArticleHints, Error>>;
 }
 
 const StatBox = ({
@@ -134,6 +142,7 @@ export const GameResultDialog = ({
   article,
   victoryMessage,
   scoreBreakdown,
+  getNewArticle,
 }: GameResultDialogProps) => {
   const [timeUntilMidnight, setTimeUntilMidnight] = React.useState<{
     hours: number;
@@ -276,7 +285,11 @@ export const GameResultDialog = ({
           </Button>
         </div>
 
-        {isDaily ? <DailyContent /> : <UnlimitedContent />}
+        {isDaily ? (
+          <DailyContent />
+        ) : (
+          <UnlimitedContent getNewArticle={getNewArticle} />
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -444,13 +457,19 @@ const DailyContent = () => {
   );
 };
 
-const UnlimitedContent = () => {
-  const router = useRouter();
-
+const UnlimitedContent = ({
+  getNewArticle,
+}: {
+  getNewArticle: (
+    options?: RefetchOptions
+  ) => Promise<QueryObserverResult<WikiArticleHints, Error>>;
+}) => {
   return (
     <div className="flex flex-col gap-4 items-center mt-4">
       <Button
-        onClick={() => router.push("/unlimited")}
+        onClick={() => {
+          getNewArticle();
+        }}
         variant="default"
         className="group w-full"
       >
