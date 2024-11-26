@@ -23,11 +23,13 @@ const StatBox = ({
   value,
   icon,
   isLoading = false,
+  subValue,
 }: {
   label: string;
   value: number | string;
   icon: React.ReactNode;
   isLoading?: boolean;
+  subValue?: string;
 }) => (
   <div className="flex items-center space-x-4 p-4 bg-secondary/10 rounded-lg">
     <div className="p-2 bg-secondary/20 rounded-full">{icon}</div>
@@ -36,7 +38,12 @@ const StatBox = ({
       {isLoading ? (
         <Skeleton className="h-6 w-16" />
       ) : (
-        <p className="text-2xl font-bold">{value}</p>
+        <div className="flex flex-col items-start gap-1">
+          <p className="text-2xl font-bold">{value}</p>
+          {subValue && (
+            <p className="text-sm text-muted-foreground">{subValue}</p>
+          )}
+        </div>
       )}
     </div>
   </div>
@@ -117,6 +124,7 @@ export default function StatisticsPage() {
             <StatBox
               label="Win Rate"
               value={calculateWinRate(dailyWins ?? 0, dailyGames ?? 0)}
+              subValue={`${dailyWins ?? 0} win${dailyWins === 1 ? "" : "s"}`}
               icon={<Sparkles className="h-5 w-5 text-purple-300" />}
               isLoading={dailyGamesLoading || dailyWinsLoading}
             />
@@ -155,6 +163,9 @@ export default function StatisticsPage() {
             <StatBox
               label="Win Rate"
               value={calculateWinRate(unlimitedWins ?? 0, unlimitedGames ?? 0)}
+              subValue={`${unlimitedWins ?? 0} win${
+                unlimitedWins === 1 ? "" : "s"
+              }`}
               icon={<Sparkles className="h-5 w-5 text-purple-300" />}
               isLoading={unlimitedGamesLoading || unlimitedWinsLoading}
             />
