@@ -1,6 +1,7 @@
 "use client";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import Game from "@/components/custom/Game";
+import { SecureGameWrapper } from "@/components/custom/SecureGameWrapper";
 import LoadingSpinner from "@/components/loading-spinner";
 import useRandomWikipediaArticle from "@/hooks/useRandomWikipediaArticle";
 
@@ -42,12 +43,14 @@ export default function UnlimitedClientPage() {
   return (
     <>
       <Breadcrumb />
-      <Game
-        article={article}
-        refetchArticle={refetch}
-        isUnlimited={true}
-        title="Unlimited Wikipedia Challenge"
-      />
+      <SecureGameWrapper isUnlimited={true} dailyGameId={article.daily_game_id}>
+        <Game
+          article={article}
+          refetchArticle={refetch}
+          isUnlimited={true}
+          title="Unlimited Wikipedia Challenge"
+        />
+      </SecureGameWrapper>
     </>
   );
 }

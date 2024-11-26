@@ -59,6 +59,17 @@ export async function saveGameResult({
   // Normalize attempts value to ensure it's within bounds
   const normalizedAttempts = Math.min(Math.max(1, attempts), 10);
 
+  if (!isUnlimited) {
+    const hasPlayedDaily = await getUserHasPlayedDailyGame(
+      userId,
+      daily_game_id!
+    );
+
+    if (hasPlayedDaily) {
+      return;
+    }
+  }
+
   try {
     // Start a transaction by using multiple operations
     const gameResult: GameResult = {
@@ -105,4 +116,24 @@ export async function saveGameResult({
     console.error("Error in saveGameResult:", error);
     throw error;
   }
+}
+
+export async function getUserHasPlayedDailyGame(
+  userId: string,
+  dailyGameId: string
+): Promise<boolean> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("game_results")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("daily_game_id", dailyGameId);
+
+  if (error) {
+    console.error("Error fetching daily game results:", error);
+    throw error;
+  }
+  console.log("xxx", data && data.length > 0);
+  return data && data.length > 0;
 }

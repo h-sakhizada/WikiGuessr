@@ -1,26 +1,36 @@
-import React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
-  Trophy,
-  Timer,
-  Brain,
-  Share2,
+  useUserDailyGamesPlayed,
+  useUserDailyStreak,
+  useUserDailyWins,
+  useUserUnlimitedGamesPlayed,
+  useUserUnlimitedStreak,
+  useUserUnlimitedWins,
+} from "@/hooks/usePersonalStatistics";
+import { useUser } from "@/hooks/useUser";
+import {
   BarChart2,
-  Star,
-  XCircle,
+  Brain,
+  ExternalLink,
   Lightbulb,
   Scale,
-  ExternalLink,
+  Star,
+  Timer,
+  Trophy,
+  XCircle,
 } from "lucide-react";
-import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
+import React from "react";
+import Confetti from "react-confetti";
+import LoadingSpinner, { InlineLoadingSpinner } from "../loading-spinner";
+import { UseQueryResult } from "@tanstack/react-query";
 
 interface GameStats {
   gamesPlayed: number;
@@ -52,34 +62,48 @@ interface GameResultDialogProps {
   scoreBreakdown?: ScoreBreakdown | null;
 }
 
-const dummyDailyStats: GameStats = {
-  gamesPlayed: 42,
-  gamesWon: 35,
-  currentStreak: 7,
-  bestStreak: 12,
-  averageGuesses: 3.2,
-};
-
-const dummyUnlimitedStats: GameStats = {
-  gamesPlayed: 156,
-  gamesWon: 123,
-  currentStreak: 15,
-  bestStreak: 25,
-  averageGuesses: 3.8,
-};
-
 const StatBox = ({
   label,
   value,
+  isLoading,
 }: {
   label: string;
-  value: number | string;
-}) => (
-  <div className="flex flex-col items-center p-2 bg-secondary/10 ">
-    <span className="text-2xl font-bold">{value}</span>
-    <span className="text-sm text-muted-foreground">{label}</span>
-  </div>
-);
+  value: UseQueryResult<number | string, Error> | number | string;
+  isLoading: boolean;
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center p-2 bg-secondary/10 ">
+        <InlineLoadingSpinner size="sm" />
+        <span className="text-sm text-muted-foreground">{label}</span>
+      </div>
+    );
+  }
+
+  if (typeof value === "number" || typeof value === "string") {
+    return (
+      <div className="flex flex-col items-center p-2 bg-secondary/10 ">
+        <span className="text-2xl font-bold">{value}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
+      </div>
+    );
+  }
+
+  if (value.isError) {
+    return <span>Error loading stats</span>;
+  }
+
+  if (!value.data) {
+    return <span>N/A</span>;
+  }
+
+  return (
+    <div className="flex flex-col items-center p-2 bg-secondary/10 ">
+      <span className="text-2xl font-bold">{value.data}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
+    </div>
+  );
+};
 
 const ScoreItem = ({
   label,
@@ -111,7 +135,6 @@ export const GameResultDialog = ({
   victoryMessage,
   scoreBreakdown,
 }: GameResultDialogProps) => {
-  const stats = isDaily ? dummyDailyStats : dummyUnlimitedStats;
   const [timeUntilMidnight, setTimeUntilMidnight] = React.useState<{
     hours: number;
     minutes: number;
@@ -232,15 +255,7 @@ export const GameResultDialog = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 ">
-          <StatBox label="Games Played" value={stats.gamesPlayed} />
-          <StatBox
-            label="Win Rate"
-            value={`${Math.round((stats.gamesWon / stats.gamesPlayed) * 100)}%`}
-          />
-          <StatBox label="Current Streak" value={stats.currentStreak} />
-          <StatBox label="Best Streak" value={stats.bestStreak} />
-        </div>
+        {isDaily ? <DailyStats /> : <UnlimitedStats />}
 
         <div className="flex gap-2 justify-center mt-4">
           <Button
@@ -261,17 +276,187 @@ export const GameResultDialog = ({
           </Button>
         </div>
 
-        {isDaily && (
-          <div className="text-center text-sm text-muted-foreground mt-4">
-            <Timer className="inline-block mr-2 h-4 w-4" />
-            Next daily challenge in:{" "}
-            <span className="font-semibold w-16">
-              {timeUntilMidnight.hours}h {timeUntilMidnight.minutes}m{" "}
-              {timeUntilMidnight.seconds}s
-            </span>
-          </div>
-        )}
+        {isDaily ? <DailyContent /> : <UnlimitedContent />}
       </DialogContent>
     </Dialog>
+  );
+};
+
+const DailyStats = () => {
+  const user = useUser();
+  const dailyGamesPlayed = useUserDailyGamesPlayed(user.data?.id);
+  const dailyWins = useUserDailyWins(user.data?.id);
+  const winRate = (() => {
+    if (dailyWins.isLoading || dailyGamesPlayed.isLoading) {
+      return "N/A";
+    }
+
+    if (dailyWins.isError || dailyGamesPlayed.isError) {
+      return "Error";
+    }
+
+    if (!dailyWins.data || !dailyGamesPlayed.data) {
+      return "N/A";
+    }
+
+    if (dailyGamesPlayed.data === 0) {
+      return "0%";
+    }
+    return `${Math.round((dailyWins.data / dailyGamesPlayed.data) * 100)}%`;
+  })();
+  const streak = useUserDailyStreak(user.data?.id);
+  const currentStreak = streak.data?.currentStreak ?? "N/A";
+  const bestStreak = streak.data?.bestStreak ?? "N/A";
+
+  if (user.isLoading) {
+    return <LoadingSpinner />;
+  }
+  return (
+    <div className="grid grid-cols-2 gap-4 mt-4">
+      <StatBox
+        label="Daily Games Played"
+        value={dailyGamesPlayed}
+        isLoading={dailyGamesPlayed.isLoading || dailyGamesPlayed.isFetching}
+      />
+      <StatBox
+        label="Win Rate"
+        value={winRate}
+        isLoading={
+          dailyWins.isLoading ||
+          dailyGamesPlayed.isLoading ||
+          dailyGamesPlayed.isFetching ||
+          dailyWins.isFetching
+        }
+      />
+      <StatBox
+        label="Current Streak"
+        value={currentStreak}
+        isLoading={streak.isLoading || streak.isFetching}
+      />
+      <StatBox
+        label="Best Streak"
+        value={bestStreak}
+        isLoading={streak.isLoading || streak.isFetching}
+      />
+    </div>
+  );
+};
+const UnlimitedStats = () => {
+  const user = useUser();
+  const unlimitedGamesPlayed = useUserUnlimitedGamesPlayed(user.data?.id);
+  const unlimitedWins = useUserUnlimitedWins(user.data?.id);
+  const winRate = (() => {
+    if (unlimitedWins.isLoading || unlimitedGamesPlayed.isLoading) {
+      return "N/A";
+    }
+
+    if (unlimitedWins.isError || unlimitedGamesPlayed.isError) {
+      return "Error";
+    }
+
+    if (!unlimitedWins.data || !unlimitedGamesPlayed.data) {
+      return "N/A";
+    }
+
+    if (unlimitedGamesPlayed.data === 0) {
+      return "0%";
+    }
+    return `${Math.round((unlimitedWins.data / unlimitedGamesPlayed.data) * 100)}%`;
+  })();
+  const streak = useUserUnlimitedStreak(user.data?.id);
+  const currentStreak = streak.data?.currentStreak ?? "N/A";
+  const bestStreak = streak.data?.bestStreak ?? "N/A";
+
+  if (user.isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-4 mt-4">
+      <StatBox
+        label="Unlimited Games Played"
+        value={unlimitedGamesPlayed}
+        isLoading={
+          unlimitedGamesPlayed.isLoading || unlimitedGamesPlayed.isFetching
+        }
+      />
+      <StatBox
+        label="Win Rate"
+        value={winRate}
+        isLoading={
+          unlimitedWins.isLoading ||
+          unlimitedGamesPlayed.isLoading ||
+          unlimitedGamesPlayed.isFetching ||
+          unlimitedWins.isFetching
+        }
+      />
+      <StatBox
+        label="Current Streak"
+        value={currentStreak}
+        isLoading={streak.isLoading || streak.isFetching}
+      />
+      <StatBox
+        label="Best Streak"
+        value={bestStreak}
+        isLoading={streak.isLoading || streak.isFetching}
+      />
+    </div>
+  );
+};
+
+const DailyContent = () => {
+  const [timeUntilMidnight, setTimeUntilMidnight] = React.useState<{
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({ hours: 0, minutes: 0, seconds: 0 });
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const midnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+        0,
+        0,
+        0
+      );
+      const timeLeft = midnight.getTime() - now.getTime();
+      const hours = Math.floor(timeLeft / 1000 / 60 / 60);
+      const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
+      const seconds = Math.floor((timeLeft / 1000) % 60);
+      setTimeUntilMidnight({ hours, minutes, seconds });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="text-center text-sm text-muted-foreground mt-4">
+      <Timer className="inline-block mr-2 h-4 w-4" />
+      Next daily challenge in:{" "}
+      <span className="font-semibold w-16">
+        {timeUntilMidnight.hours}h {timeUntilMidnight.minutes}m{" "}
+        {timeUntilMidnight.seconds}s
+      </span>
+    </div>
+  );
+};
+
+const UnlimitedContent = () => {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-4 items-center mt-4">
+      <Button
+        onClick={() => router.push("/unlimited")}
+        variant="default"
+        className="group w-full"
+      >
+        Play Another Round
+        <Brain className="ml-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+      </Button>
+    </div>
   );
 };

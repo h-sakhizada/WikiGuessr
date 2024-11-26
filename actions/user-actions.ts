@@ -86,9 +86,6 @@ export async function editUser(user: Partial<User>): Promise<User> {
   return data as User;
 }
 
-//  Helper actions to modify specific columns in the user table.
-//------------------------------------------------------------------------------------------
-
 // Premium / Free Helper Methods
 //-------------------------------------------------------
 export async function setUserToPremium(uuid?: string): Promise<void> {
@@ -186,7 +183,6 @@ export async function setSelectedBadge(badgeId: string): Promise<void> {
     throw error;
   }
 }
-
 export async function getSelectedBadge(): Promise<string | null> {
   const supabase = createClient();
 
@@ -210,4 +206,151 @@ export async function getSelectedBadge(): Promise<string | null> {
   }
 
   return data ? data.badge_id : null;
+}
+
+// User statistics helper functions
+
+export async function getUserUnlimitedGamesPlayed(
+  userId: string
+): Promise<number> {
+  const supabase = createClient();
+
+  const { error, count } = await supabase
+    .from("unlimited_games")
+    .select("id", { count: "exact" })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error fetching unlimited games:", error);
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
+export async function getUserDailyGamesPlayed(userId: string): Promise<number> {
+  const supabase = createClient();
+
+  const { error, count } = await supabase
+    .from("game_results")
+    .select("id", { count: "exact" })
+    .eq("user_id", userId)
+    .eq("type", "daily");
+
+  if (error) {
+    console.error("Error fetching daily games:", error);
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
+export async function getUserUnlimitedWins(userId: string): Promise<number> {
+  const supabase = createClient();
+
+  const { error, count } = await supabase
+    .from("game_results")
+    .select("id", { count: "exact" })
+    .eq("user_id", userId)
+    .eq("isVictory", true)
+    .eq("type", "unlimited");
+
+  if (error) {
+    console.error("Error fetching unlimited wins:", error);
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
+export async function getUserDailyWins(userId: string): Promise<number> {
+  const supabase = createClient();
+
+  const { error, count } = await supabase
+    .from("game_results")
+    .select("id", { count: "exact" })
+    .eq("user_id", userId)
+    .eq("isVictory", true)
+    .eq("type", "daily");
+
+  if (error) {
+    console.error("Error fetching daily wins:", error);
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
+export async function getUserUnlimitedCurrentAndBestStreak(
+  userId: string
+): Promise<{ currentStreak: number; bestStreak: number }> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("game_results")
+    .select("isVictory")
+    .eq("user_id", userId)
+    .eq("type", "unlimited")
+    .order("attempt_date", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching unlimited game results:", error);
+    throw error;
+  }
+
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let consecutiveWins = 0;
+
+  for (const game of data) {
+    if (game.isVictory) {
+      consecutiveWins++;
+      if (consecutiveWins > bestStreak) {
+        bestStreak = consecutiveWins;
+      }
+    } else {
+      consecutiveWins = 0;
+    }
+  }
+
+  currentStreak = consecutiveWins;
+
+  return { currentStreak, bestStreak };
+}
+
+export async function getUserDailyCurrentAndBestStreak(
+  userId: string
+): Promise<{ currentStreak: number; bestStreak: number }> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("game_results")
+    .select("isVictory")
+    .eq("user_id", userId)
+    .eq("type", "daily")
+    .order("attempt_date", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching daily game results:", error);
+    throw error;
+  }
+
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let consecutiveWins = 0;
+
+  for (const game of data) {
+    if (game.isVictory) {
+      consecutiveWins++;
+      if (consecutiveWins > bestStreak) {
+        bestStreak = consecutiveWins;
+      }
+    } else {
+      consecutiveWins = 0;
+    }
+  }
+
+  currentStreak = consecutiveWins;
+
+  return { currentStreak, bestStreak };
 }

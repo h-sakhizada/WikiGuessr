@@ -9,7 +9,6 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import LoadingSpinner from "../loading-spinner";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
@@ -51,6 +50,7 @@ const GAME_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 function Game(props: GameProps) {
   const user = useUser();
+
   const [guess, setGuess] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [victoryMessage, setVictoryMessage] = useState("");
@@ -152,7 +152,6 @@ function Game(props: GameProps) {
     }
   };
 
-  if (user.isLoading) return <LoadingSpinner />;
   if (!user.data) return redirect("/sign-in");
 
   const calculateScoreBreakdown = (
@@ -375,52 +374,58 @@ function Game(props: GameProps) {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <Input
-                  id="guess"
-                  type="text"
-                  value={guess}
-                  onChange={(e) => setGuess(e.target.value)}
-                  placeholder={gameState.isGameOver ? "Game Over. Thanks for playing 😊" : "Enter your guess..."}
-                  className="flex-grow text-lg"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      checkGuess();
+              <div className="flex flex-col md:flex-row items-center gap-2">
+                <div className="flex gap-2 w-full">
+                  <Input
+                    id="guess"
+                    type="text"
+                    value={guess}
+                    onChange={(e) => setGuess(e.target.value)}
+                    placeholder={
+                      gameState.isGameOver
+                        ? "Game Over. Thanks for playing 😊"
+                        : "Enter your guess..."
                     }
-                  }}
-                  disabled={
-                    gameState.score === 0 || gameState.currentHint === 6
-                  }
-                />
-                {gameState.isVictory || gameState.currentHint === 6 ? (
-                  <Button
-                    variant="secondary"
-                    size="default"
-                    onClick={() => setShowResult(true)}
-                    className="group"
-                  >
-                    <Trophy className="h-4 w-4 group-hover:scale-110 transition-transform text-yellow-500" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="default"
-                    onClick={checkGuess}
+                    className="flex-grow text-lg"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        checkGuess();
+                      }
+                    }}
                     disabled={
-                      gameState.currentHint > 5 || gameState.score === 0
+                      gameState.score === 0 || gameState.currentHint === 6
                     }
-                    className="group"
-                  >
-                    <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  </Button>
-                )}
+                  />
+                  {gameState.isVictory || gameState.currentHint === 6 ? (
+                    <Button
+                      variant="secondary"
+                      size="default"
+                      onClick={() => setShowResult(true)}
+                      className="group"
+                    >
+                      <Trophy className="h-4 w-4 group-hover:scale-110 transition-transform text-yellow-500" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="default"
+                      onClick={checkGuess}
+                      disabled={
+                        gameState.currentHint > 5 || gameState.score === 0
+                      }
+                      className="group"
+                    >
+                      <Search className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    </Button>
+                  )}
+                </div>
                 {props.isUnlimited && (
                   <Button
                     size="lg"
                     variant="secondary"
                     onClick={resetGame}
-                    className="group"
+                    className="group "
                   >
                     New Article
                     <RefreshCw className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
@@ -485,7 +490,7 @@ function Game(props: GameProps) {
         </div>
 
         <div className="flex justify-center">
-          {gameState.currentHint === 5 ? (
+          {gameState.currentHint === 5 || gameState.score <= 20 ? (
             <Button
               size="lg"
               onClick={handleGiveUp}

@@ -256,7 +256,7 @@ export default function ProfileClientPage() {
           />
 
           <div className="mb-8">
-            <div className="relative w-40 h-40 mx-auto mb-4">
+            <div className="relative w-40 h-fit mx-auto mb-4">
               <img
                 src={avatarPreview || "/assets/default_profile_img.png"}
                 alt="Avatar Preview"
@@ -323,32 +323,36 @@ export default function ProfileClientPage() {
             />
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button
-            className="flex-1"
-            onClick={() =>
-              (window.location.href = "/protected/account/statistics")
-            }
-          >
-            <LineChart className="h-4 w-4 mr-2" />
-            Personal Statistics
-          </Button>
-          <Button
-            className="flex-1"
-            variant={user.is_premium ? "outline" : "default"}
-            onClick={handleAccountTypeChange}
-          >
-            {user.is_premium ? (
-              "Downgrade to Free Account"
-            ) : (
-              <>
-                <Zap className="h-4 w-4 mr-2" />
-                Go Premium
-              </>
-            )}
-          </Button>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              className="flex-1"
+              onClick={() =>
+                (window.location.href = "/protected/account/statistics")
+              }
+            >
+              <LineChart className="h-4 w-4 mr-2" />
+              Personal Statistics
+            </Button>
+            <Button
+              className="flex-1"
+              variant={user.is_premium ? "outline" : "action"}
+              onClick={handleAccountTypeChange}
+            >
+              {user.is_premium ? (
+                "Downgrade to Free Account"
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 mr-2" />
+                  Go Premium
+                </>
+              )}
+            </Button>
+          </div>
           <Button
             className="flex-2"
+            variant={"ghost"}
             onClick={() => (window.location.href = "/protected/how-to-upgrade")}
           >
             <MessageCircleQuestion className="h-4 w-4 mr-2" />

@@ -30,4 +30,11 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size, className }) => {
   );
 };
 
+export const InlineLoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  size,
+  className,
+}) => {
+  return <div className={spinnerVariants({ size, className })} />;
+};
+
 export default LoadingSpinner;
