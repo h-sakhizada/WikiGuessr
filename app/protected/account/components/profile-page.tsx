@@ -332,7 +332,7 @@ export default function ProfileClientPage() {
           >
             <LineChart className="h-4 w-4 mr-2" />
             Personal Statistics
-          </Button>
+            </Button>
           <Button
             className="flex-1"
             variant={user.is_premium ? "outline" : "default"}

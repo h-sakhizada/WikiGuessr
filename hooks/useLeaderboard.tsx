@@ -10,6 +10,9 @@ import {
   getWeeklyDailyLeaderboard,
   getWeeklyGameCounts,
   getWeeklyUnlimitedLeaderboard,
+  getAllVictoriesForDayByUser,
+  getAllVictoriesForWeekByUser,
+  getAllVictoriesByUser,
   //   getWeeklyDailyLeaderboard,
   //   getWeeklyUnlimitedLeaderboard,
   //   getAlltimeDailyLeaderboard,
@@ -71,6 +74,30 @@ export function useAlltimeGameCounts() {
   return useQuery({
     queryKey: ["leaderboard", "alltime-counts"],
     queryFn: () => getAlltimeGameCounts(),
+    refetchInterval: 300000,
+  });
+}
+
+export function useAllVictoriesForDayByUser(uuid?: string) {
+  return useQuery({
+    queryKey: ["personalStats", "daily-victories", uuid],
+    queryFn: () => getAllVictoriesForDayByUser(uuid),
+    refetchInterval: 300000,
+  });
+}
+
+export function useAllVictoriesForWeekByUser(uuid?: string) {
+  return useQuery({
+    queryKey: ["personalStats", "weekly-victories", uuid],
+    queryFn: () => getAllVictoriesForWeekByUser(uuid),
+    refetchInterval: 300000,
+  });
+}
+
+export function useAllVictoriesByUser(uuid?: string) {
+  return useQuery({
+    queryKey: ["personalStats", "total-victories", uuid],
+    queryFn: () => getAllVictoriesByUser(uuid),
     refetchInterval: 300000,
   });
 }

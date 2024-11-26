@@ -6,6 +6,7 @@ import {
   GameCounts,
   LeaderboardEntry,
   WeeklyResult,
+  VictoryStats
 } from "@/app/protected/leaderboard/types";
 import { User } from "@/types";
 import { createClient } from "@/utils/supabase/server";
@@ -339,5 +340,107 @@ export async function getAlltimeGameCounts(): Promise<GameCounts> {
     daily,
     unlimited,
     total: daily + unlimited,
+  };
+}
+
+export async function getAllVictoriesForDayByUser(uuid?: string): Promise<GameCounts> {
+  const supabase = createClient();
+
+  if (!uuid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uuid = user?.id;
+  }
+
+  if (!uuid) return {
+    daily:0,
+    unlimited:0,
+    total:0,
+  };
+
+  const { data, error } = await supabase.from("game_results").select("type").eq("user_id", uuid).eq("isVictory", true).gte(
+    "attempt_date",
+    new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+  );
+
+  if (error) throw error;
+
+  const daily = data.filter((g) => g.type === "daily").length;
+  const unlimited = data.filter((g) => g.type === "unlimited").length;
+
+  return {
+    daily,
+    unlimited,
+    total: daily + unlimited,
+  };
+}
+
+export async function getAllVictoriesForWeekByUser(uuid?: string): Promise<GameCounts> {
+  const supabase = createClient();
+  
+
+  if (!uuid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uuid = user?.id;
+  }
+
+  if (!uuid) return {
+    daily:0,
+    unlimited:0,
+    total:0,
+  };
+
+  const { data, error } = await supabase.from("game_results").select("type").eq("user_id", uuid).eq("isVictory", true).gte(
+    "attempt_date",
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  );
+
+  if (error) throw error;
+
+  const daily = data.filter((g) => g.type === "daily").length;
+  const unlimited = data.filter((g) => g.type === "unlimited").length;
+
+  return {
+    daily,
+    unlimited,
+    total: daily + unlimited,
+  };
+}
+
+export async function getAllVictoriesByUser(uuid?: string): Promise<VictoryStats> {
+  const supabase = createClient();
+  console.log('in victories');
+
+  if (!uuid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    uuid = user?.id;
+  }
+
+  console.log(uuid);
+  if (!uuid) return {
+    daily:0,
+    unlimited:0,
+    total:0,
+    names: []
+  };
+
+  const { data, error } = await supabase.from("game_results").select("type, article_title").eq("user_id", uuid).eq("isVictory", true);
+
+  if (error) throw error;
+
+  const daily = data.filter((g) => g.type === "daily").length;
+  const unlimited = data.filter((g) => g.type === "unlimited").length;
+  const names = data.map((x) => x.article_title);
+
+  return {
+    daily,
+    unlimited,
+    total: daily + unlimited,
+    names,
   };
 }

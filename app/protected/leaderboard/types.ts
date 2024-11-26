@@ -34,3 +34,10 @@ export interface GameCounts {
   unlimited: number;
   total: number;
 }
+
+export interface VictoryStats {
+  daily: number;
+  unlimited: number;
+  total: number;
+  names: string[];
+}
