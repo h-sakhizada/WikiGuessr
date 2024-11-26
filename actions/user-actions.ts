@@ -354,3 +354,51 @@ export async function getUserDailyCurrentAndBestStreak(
 
   return { currentStreak, bestStreak };
 }
+
+export async function getUserDailyTotalScore(userId: string): Promise<number> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("game_results")
+    .select("score")
+    .eq("user_id", userId)
+    .eq("type", "daily");
+
+  if (error) {
+    console.error("Error fetching daily game results:", error);
+    throw error;
+  }
+
+  let totalScore = 0;
+
+  for (const game of data) {
+    totalScore += game.score;
+  }
+
+  return totalScore;
+}
+
+export async function getUserUnlimitedTotalScore(
+  userId: string
+): Promise<number> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("game_results")
+    .select("score")
+    .eq("user_id", userId)
+    .eq("type", "unlimited");
+
+  if (error) {
+    console.error("Error fetching unlimited game results:", error);
+    throw error;
+  }
+
+  let totalScore = 0;
+
+  for (const game of data) {
+    totalScore += game.score;
+  }
+
+  return totalScore;
+}
