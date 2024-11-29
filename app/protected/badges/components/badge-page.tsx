@@ -75,7 +75,13 @@ export default function BadgeClientPage() {
           {!error ? (
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {allBadges!.map((badge) => (
-                <Card key={badge.id} className="bg-white p-4 rounded shadow">
+                <Card
+                  key={badge.id}
+                  className={
+                    "p-4 rounded shadow " +
+                    (badge.is_premium ? "bg-purple-300" : "bg-white")
+                  }
+                >
                   <CardContent className="flex justify-center">
                     <img
                       src={`${badge.icon}`}
@@ -84,7 +90,6 @@ export default function BadgeClientPage() {
                         cursor: "pointer",
                         width: "50%",
                         height: "auto",
-                        border: "3px solid gold",
                       }}
                     />
                   </CardContent>
@@ -99,7 +104,7 @@ export default function BadgeClientPage() {
                         onClick={() => buyClicked(badge)}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
                       >
-                        Buy Now!
+                        Buy Now! {"($" + badge.price + ")"}
                       </Button>
                     ) : (
                       <Button

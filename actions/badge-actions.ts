@@ -47,7 +47,10 @@ export async function getBadgesForUser(
 export async function getAllBadges(): Promise<Badge[] | null> {
   const supabase = createClient();
 
-  const { data, error } = await supabase.from("badges").select("*");
+  const { data, error } = await supabase
+    .from("badges")
+    .select("*")
+    .order("is_premium", { ascending: false });
 
   if (error) {
     console.error("Error fetching badges:", error);
@@ -99,10 +102,11 @@ export async function addRandomBadgeToUserCollection(
 
   if (!uuid) return false;
 
-  const payload = await getBadgesForUser();
-  const userBadges = payload?.badges as Badge[];
+  const uBadges = await getBadgesForUser();
+  const userBadges = uBadges?.badges as Badge[];
 
-  let badgePool = await getAllBadges();
+  const aBadges = await getAllBadges();
+  let badgePool = aBadges?.filter((b) => !b.is_premium);
 
   if (!badgePool || badgePool.length === 0) return false;
   if (userBadges && userBadges.length > 0) {
