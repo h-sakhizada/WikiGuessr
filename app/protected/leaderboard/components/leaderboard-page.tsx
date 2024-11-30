@@ -68,7 +68,7 @@ const LeaderboardTable = ({
                 {entry.username === user.data?.username ? (
                   <div className="flex items-center justify-start">
                     <CircleUserRound className="h-4 w-4 text-purple-400 inline-block mr-2" />
-                  <strong>{entry.username}</strong>
+                    <strong>{entry.username}</strong>
                   </div>
                 ) : (
                   entry.username
@@ -195,11 +195,17 @@ export default function LeaderboardClientPage() {
       {isStatsLoading ? (
         <LoadingSpinner />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <StatsCard
             title="Weekly Games Played"
             value={weeklyGames?.total || 0}
           />
+          {alltimeGames?.total && weeklyGames?.total && (
+            <StatsCard
+              title="Unlimited Games Played"
+              value={alltimeGames.total - weeklyGames.total || 0}
+            />
+          )}
           <StatsCard
             title="All-time Games Played"
             value={alltimeGames?.total || 0}

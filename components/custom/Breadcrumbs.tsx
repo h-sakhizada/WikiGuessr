@@ -34,7 +34,7 @@ const Breadcrumb = () => {
   const breadcrumbs = generateBreadcrumbs();
 
   return (
-    <nav className="flex items-center space-x-2 text-primary rounded-lg shadow-sm  mb-4">
+    <nav className="flex items-center space-x-2 text-primary rounded-lg mb-4">
       <Link href="/" className="transition-colors flex items-center">
         <Home size={18} />
       </Link>

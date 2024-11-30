@@ -79,7 +79,7 @@ export default function BadgeClientPage() {
                   key={badge.id}
                   className={
                     "p-4 rounded shadow " +
-                    (badge.is_premium ? "bg-purple-300" : "bg-white")
+                    (badge.is_premium ? "bg-purple-300" : "bg-secondary")
                   }
                 >
                   <CardContent className="flex justify-center">
@@ -94,11 +94,11 @@ export default function BadgeClientPage() {
                     />
                   </CardContent>
                   <CardHeader>
-                    <CardTitle className="text-2xl font-bold flex justify-center">
+                    <CardTitle className="text-2xl font-bold flex justify-center text-primary">
                       {badge.name} Badge
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex justify-center">
+                  <CardContent className="flex justify-center ">
                     {!userBadges?.some((b) => b.id === badge.id) ? (
                       <Button
                         onClick={() => buyClicked(badge)}

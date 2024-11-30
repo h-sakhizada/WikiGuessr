@@ -311,7 +311,8 @@ export async function getWeeklyGameCounts(): Promise<GameCounts> {
     .gte(
       "attempt_date",
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    );
+    )
+    .eq("type", "daily");
 
   if (error) throw error;
 
