@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/types";
 import { Button } from "@/components/ui/button";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
+import { cn } from "@/lib/utils";
 
 export default function BadgeClientPage() {
   const user = useUser();
@@ -83,15 +84,24 @@ export default function BadgeClientPage() {
                   }
                 >
                   <CardContent className="flex justify-center">
-                    <img
-                      src={`${badge.icon}`}
-                      alt={badge.name}
-                      style={{
-                        cursor: "pointer",
-                        width: "50%",
-                        height: "auto",
-                      }}
-                    />
+                    <div
+                      className={cn(
+                        "w-32 h-32 relative flex border-4  rounded-lg overflow-hidden",
+                        {
+                          "border-primary bg-primary": !badge.is_premium,
+                          "border-purple-400 bg-purple-400": badge.is_premium,
+                        }
+                      )}
+                    >
+                      <img
+                        src={`${badge.icon}`}
+                        alt={badge.name}
+                        className="object-stretch max-w-full max-h-full"
+                        style={{
+                          cursor: "pointer",
+                        }}
+                      />
+                    </div>
                   </CardContent>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold flex justify-center text-primary">

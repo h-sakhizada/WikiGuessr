@@ -165,7 +165,7 @@ export async function setSelectedBadge(badgeId: string): Promise<void> {
   const { error: resetError } = await supabase
     .from("badge_user_junction")
     .update({ badge_selected: false })
-    .eq("id", userId);
+    .eq("user_id", userId);
 
   if (resetError) {
     console.error("Error resetting badge selection:", resetError);

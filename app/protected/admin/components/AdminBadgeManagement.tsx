@@ -209,12 +209,11 @@ const AdminBadgeManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [newBadge, setNewBadge] = useState({
     name: "",
-    description: "",
     icon: null,
   });
   const [editingCell, setEditingCell] = useState<{
     id: string;
-    field: "name" | "description";
+    field: "name";
   } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -286,43 +285,6 @@ const AdminBadgeManagement = () => {
         );
       },
     }),
-    columnHelper.accessor("description", {
-      header: "Description",
-      cell: (info) => {
-        const isEditing =
-          editingCell?.id === info.row.original.id &&
-          editingCell.field === "description";
-
-        return isEditing ? (
-          <EditableTextareaCell
-            value={info.getValue() || ""}
-            onSave={async (value) => {
-              await updateBadgeMutation.mutateAsync({
-                id: info.row.original.id,
-                updates: { description: value },
-              });
-            }}
-            onCancel={() => setEditingCell(null)}
-          />
-        ) : (
-          <div className="flex items-center gap-2">
-            <span>{info.getValue()}</span>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() =>
-                setEditingCell({
-                  id: info.row.original.id,
-                  field: "description",
-                })
-              }
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-    }),
     columnHelper.accessor("id", {
       header: "Actions",
       cell: (info) => {
@@ -372,7 +334,7 @@ const AdminBadgeManagement = () => {
 
     try {
       await addBadgeMutation.mutateAsync(newBadge);
-      setNewBadge({ name: "", description: "", icon: null });
+      setNewBadge({ name: "", icon: null });
     } catch (err) {
       setError("Failed to add badge");
     }
@@ -407,15 +369,6 @@ const AdminBadgeManagement = () => {
             }
             placeholder="Badge Name"
             required
-            className="flex-1"
-          />
-          <Input
-            type="text"
-            value={newBadge.description}
-            onChange={(e) =>
-              setNewBadge((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Description"
             className="flex-1"
           />
           <Button type="submit" disabled={addBadgeMutation.isPending}>
