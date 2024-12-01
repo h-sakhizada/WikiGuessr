@@ -232,7 +232,7 @@ export default function ProfileClientPage() {
           className="w-10 h-10 mb-1"
           alt={badge.name}
         />
-        <span className="text-xs font-medium text-center text-white">
+        <span className="text-xs font-medium text-center text-primary">
           {badge.name}
         </span>
       </div>

@@ -288,17 +288,19 @@ function Game(props: GameProps) {
 
       endGame(true, breakdown.finalScore, breakdown);
 
-      try {
-        const badgePromise = addRandomBadgeToUserCollection();
-        if (badgePromise) {
-          badgePromise.then(() => {
-            toast.success("Badge awarded! 🎉", {
-              iconTheme: { primary: "green", secondary: "white" },
+      if (!props.isUnlimited) {
+        try {
+          const badgePromise = addRandomBadgeToUserCollection();
+          if (badgePromise) {
+            badgePromise.then(() => {
+              toast.success("Badge awarded! 🎉", {
+                iconTheme: { primary: "green", secondary: "white" },
+              });
             });
-          });
+          }
+        } catch (error) {
+          console.error("Error adding badge:", error);
         }
-      } catch (error) {
-        console.error("Error adding badge:", error);
       }
     } else {
       // For wrong guesses, increment attempts first
