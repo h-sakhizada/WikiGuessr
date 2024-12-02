@@ -10,11 +10,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAlltimeDailyLeaderboard,
-  useAlltimeGameCounts,
   useAlltimeUnlimitedLeaderboard,
   useDailyLeaderboard,
   useWeeklyDailyLeaderboard,
-  useWeeklyGameCounts,
   useWeeklyUnlimitedLeaderboard,
 } from "@/hooks/useLeaderboard";
 import { useUser } from "@/hooks/useUser";
@@ -178,44 +176,12 @@ export default function LeaderboardClientPage() {
     isLoading: isAlltimeUnlimitedLoading,
     error: alltimeUnlimitedError,
   } = useAlltimeUnlimitedLeaderboard();
-  const { data: weeklyGames, isLoading: isWeeklyGamesLoading } =
-    useWeeklyGameCounts();
-  const { data: alltimeGames, isLoading: isAlltimeGamesLoading } =
-    useAlltimeGameCounts();
-
-  const isStatsLoading =
-    isWeeklyGamesLoading || isAlltimeGamesLoading || isDailyLoading;
 
   return (
     <div className="container mx-auto py-4 sm:py-8 px-2 sm:px-4">
       <h1 className="text-2xl sm:text-4xl font-bold text-start mb-4 sm:mb-8">
         Leaderboards
       </h1>
-
-      {isStatsLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-          <StatsCard
-            title="Weekly Games Played"
-            value={weeklyGames?.total || 0}
-          />
-          {alltimeGames?.total && weeklyGames?.total && (
-            <StatsCard
-              title="Unlimited Games Played"
-              value={alltimeGames.total - weeklyGames.total || 0}
-            />
-          )}
-          <StatsCard
-            title="All-time Games Played"
-            value={alltimeGames?.total || 0}
-          />
-          <StatsCard
-            title="Today's Active Players"
-            value={dailyData?.length || 0}
-          />
-        </div>
-      )}
 
       <Tabs defaultValue="daily" className="w-full">
         <TabsList className="grid w-full h-fit grid-cols-1 lg:grid-cols-5 gap-1">
