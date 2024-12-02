@@ -2,22 +2,127 @@
 
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import LoadingSpinner from "@/components/loading-spinner";
-import { useUser } from "@/hooks/useUser";
-import { redirect } from "next/navigation";
-import { Brain, Trophy, Target, Star, Clock, Sparkles } from "lucide-react";
-import {
-  useUserUnlimitedGamesPlayed,
-  useUserDailyGamesPlayed,
-  useUserUnlimitedWins,
-  useUserDailyWins,
-  useUserUnlimitedStreak,
-  useUserDailyStreak,
-  useUserDailyTotalScore,
-  useUserUnlimitedTotalScore,
-} from "@/hooks/usePersonalStatistics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useUserDailyGamesPlayed,
+  useUserDailyStreak,
+  useUserDailyTotalScore,
+  useUserDailyWins,
+  useUserUnlimitedGamesPlayed,
+  useUserUnlimitedStreak,
+  useUserUnlimitedTotalScore,
+  useUserUnlimitedWins,
+} from "@/hooks/usePersonalStatistics";
+import { useUser } from "@/hooks/useUser";
+import {
+  Award,
+  Brain,
+  Clock,
+  Crown,
+  Sparkles,
+  Star,
+  Target,
+  Trophy,
+} from "lucide-react";
+import { redirect } from "next/navigation";
 
+const getStatStatus = (label: string, value: number) => {
+  if (value === undefined || value === null) return null;
+
+  const thresholds = {
+    "Total Score": {
+      mythical: 50000,
+      legendary: 25000,
+      epic: 10000,
+      rare: 5000,
+      common: 1000,
+    },
+    "Games Played": {
+      mythical: 1000,
+      legendary: 500,
+      epic: 250,
+      rare: 100,
+      common: 25,
+    },
+    "Win Rate": { mythical: 95, legendary: 85, epic: 75, rare: 65, common: 50 },
+    "Total Wins": {
+      mythical: 500,
+      legendary: 250,
+      epic: 100,
+      rare: 50,
+      common: 10,
+    },
+    "Current Streak": {
+      mythical: 100,
+      legendary: 50,
+      epic: 25,
+      rare: 10,
+      common: 5,
+    },
+    "Best Streak": {
+      mythical: 100,
+      legendary: 50,
+      epic: 25,
+      rare: 10,
+      common: 5,
+    },
+  };
+
+  const statThresholds = thresholds[label as keyof typeof thresholds];
+  if (!statThresholds) return null;
+
+  const numericValue = typeof value === "string" ? parseFloat(value) : value;
+
+  if (numericValue >= statThresholds.mythical) {
+    return {
+      type: "MYTHICAL",
+      glow: "shadow-[inset_0_2px_15px_rgba(236,72,153,0.3)] dark:shadow-[inset_0_2px_15px_rgba(236,72,153,0.25)]",
+      icon: <Crown className="h-4 w-4" />,
+      containerClass:
+        "bg-gradient-to-r from-pink-600/30 via-fuchsia-600/30 to-purple-600/30 dark:from-pink-400/20 dark:via-fuchsia-400/20 dark:to-purple-400/20 border-pink-400 dark:border-pink-500 text-pink-700 dark:text-pink-400 animate-gradient backdrop-blur-md",
+    };
+  } else if (numericValue >= statThresholds.legendary) {
+    return {
+      type: "LEGENDARY",
+      glow: "shadow-[inset_0_2px_15px_rgba(234,179,8,0.3)] dark:shadow-[inset_0_2px_15px_rgba(234,179,8,0.25)]",
+      icon: <Crown className="h-4 w-4" />,
+      containerClass:
+        "bg-gradient-to-r from-yellow-400/30 via-amber-400/30 to-orange-400/30 dark:from-yellow-400/20 dark:via-amber-400/20 dark:to-orange-400/20 border-yellow-400 dark:border-yellow-500 text-yellow-700 dark:text-yellow-400 backdrop-blur-md",
+    };
+  } else if (numericValue >= statThresholds.epic) {
+    return {
+      type: "EPIC",
+      glow: "shadow-[inset_0_2px_15px_rgba(147,51,234,0.3)] dark:shadow-[inset_0_2px_15px_rgba(147,51,234,0.25)]",
+      icon: <Award className="h-4 w-4" />,
+      containerClass:
+        "bg-gradient-to-r from-violet-500/30 via-purple-500/30 to-fuchsia-500/30 dark:from-violet-400/20 dark:via-purple-400/20 dark:to-fuchsia-400/20 border-purple-400 dark:border-purple-500 text-purple-700 dark:text-purple-400 backdrop-blur-md",
+    };
+  } else if (numericValue >= statThresholds.rare) {
+    return {
+      type: "RARE",
+      glow: "shadow-[inset_0_2px_15px_rgba(59,130,246,0.3)] dark:shadow-[inset_0_2px_15px_rgba(59,130,246,0.25)]",
+      icon: <Star className="h-4 w-4" />,
+      containerClass:
+        "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400",
+    };
+  } else if (numericValue >= statThresholds.common) {
+    return {
+      type: "COMMON",
+      glow: "shadow-[inset_0_2px_15px_rgba(34,197,94,0.3)] dark:shadow-[inset_0_2px_15px_rgba(34,197,94,0.25)]",
+      icon: <Target className="h-4 w-4" />,
+      containerClass:
+        "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400",
+    };
+  }
+  return {
+    type: "NOVICE",
+    glow: "",
+    icon: null,
+    containerClass:
+      "bg-primary/10 border-primary/20 text-primary-700 dark:text-primary-400",
+  };
+};
 const StatBox = ({
   label,
   value,
@@ -30,24 +135,42 @@ const StatBox = ({
   icon: React.ReactNode;
   isLoading?: boolean;
   subValue?: string;
-}) => (
-  <div className="flex items-center space-x-4 p-4 bg-secondary/10 rounded-lg">
-    <div className="p-2 bg-secondary/20 rounded-full">{icon}</div>
-    <div className="flex-1">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      {isLoading ? (
-        <Skeleton className="h-6 w-16" />
-      ) : (
-        <div className="flex flex-col items-start gap-1">
-          <p className="text-2xl font-bold">{value}</p>
-          {subValue && (
-            <p className="text-sm text-muted-foreground">{subValue}</p>
-          )}
+}) => {
+  const status = getStatStatus(
+    label,
+    typeof value === "string" ? parseFloat(value) : (value as number)
+  );
+
+  return (
+    <div
+      className={`relative flex items-center space-x-4 p-4 bg-secondary/10 rounded-lg transition-shadow duration-300 ${status?.glow || ""}`}
+    >
+      {status && (
+        <div
+          className={`absolute -top-3 -right-3 px-2 py-1 rounded-full border ${status.containerClass} 
+            flex items-center gap-1 font-semibold text-xs shadow-sm backdrop-blur-sm`}
+        >
+          {status.icon}
+          <span className="tracking-wide">{status.type}</span>
         </div>
       )}
+      <div className="p-2 bg-secondary/20 rounded-full">{icon}</div>
+      <div className="flex-1">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        {isLoading ? (
+          <Skeleton className="h-6 w-16" />
+        ) : (
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-2xl font-bold">{value}</p>
+            {subValue && (
+              <p className="text-sm text-muted-foreground">{subValue}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const StatsSection = ({
   title,
@@ -169,7 +292,6 @@ export default function StatisticsPage() {
     if (streak < 100) return "🌌 Beyond mortal comprehension!";
     return "🔮 The chosen one of WikiGuessr!";
   };
-
   // Best Streak Messages
   const getDailyBestStreakMessage = (streak: number) => {
     if (streak === 0) return "🌱 Your legacy begins here!";
@@ -219,6 +341,30 @@ export default function StatisticsPage() {
     return "🫅 Bow to the daily king!";
   };
 
+  const getDailyWinCountMessage = (wins: number) => {
+    if (wins === 0) return "🌱 Start your daily winning journey!";
+    if (wins === 1) return "🎯 First win of the day secured!";
+    if (wins === 2) return "✌️ Double trouble - two wins down!";
+    if (wins === 3) return "🎨 Triple threat achieved!";
+    if (wins === 4) return "🎲 Four-tune favors the bold!";
+    if (wins === 5) return "🖐️ High five - you're on fire!";
+    if (wins < 10) return "🌟 Perfect 10!";
+    if (wins < 15) return "🎮 Double-digit destroyer!";
+    if (wins < 20) return "🎪 The show goes on!";
+    if (wins < 25) return "🎯 Precision perfect!";
+    if (wins < 30) return "🎨 Making wiki art!";
+    if (wins < 40) return "🏃 Marathon winner in action!";
+    if (wins < 50) return "🌪️ Tornado of triumphs!";
+    if (wins < 60) return "🌟 Stellar performance!";
+    if (wins < 70) return "🎸 Wiki rockstar status!";
+    if (wins < 80) return "🌋 Eruption of excellence!";
+    if (wins < 90) return "⚡ Power level rising!";
+    if (wins < 100) return "🔥 Century mark approaching!";
+    if (wins < 150) return "🦸 Beyond mortal limits!";
+    if (wins < 200) return "🌌 Cosmic achievement unlocked!";
+    return "✨ Wiki deity status achieved!";
+  };
+
   const getUnlimitedWinPercentageMessage = (percentage: number) => {
     if (percentage < 5) return "🎲 Room for improvement!";
     if (percentage < 10) return "🌱 Growing those wiki muscles!";
@@ -233,6 +379,21 @@ export default function StatisticsPage() {
     if (percentage < 90) return "👑 Supreme victory achiever!";
     if (percentage < 95) return "🦸 Is it possible to learn this power?";
     return "⚡ Wiki perfection incarnate!";
+  };
+
+  const getTotalUnlimitedWinsMessage = (wins: number) => {
+    if (wins === 0) return "🌱 Your wiki journey begins here!";
+    if (wins < 5) return "🎲 The first steps of a champion!";
+    if (wins < 10) return "🎯 Building momentum!";
+    if (wins < 25) return "📚 Wiki warrior in training!";
+    if (wins < 50) return "🎮 Level up - you're getting there!";
+    if (wins < 100) return "⭐ Triple digits on the horizon!";
+    if (wins < 250) return "🏅 Century club member!";
+    if (wins < 500) return "🎓 Wiki scholar status!";
+    if (wins < 1000) return "👑 Approaching the millennium mark!";
+    if (wins < 2500) return "🏆 Wiki master extraordinaire!";
+    if (wins < 5000) return "⚡ Legendary achievement unlocked!";
+    return "🦸 Wiki immortality achieved!";
   };
 
   return (
@@ -270,6 +431,17 @@ export default function StatisticsPage() {
               )}
               icon={<Sparkles className="h-5 w-5 text-purple-300" />}
               isLoading={dailyGamesLoading || dailyWinsLoading}
+            />
+            <StatBox
+              label="Total Wins"
+              value={dailyWins ?? 0}
+              icon={<Trophy className="h-5 w-5 text-yellow-500" />}
+              isLoading={dailyWinsLoading}
+              subValue={
+                dailyWins
+                  ? getDailyWinCountMessage(dailyWins)
+                  : "🌱 Start your daily winning journey!"
+              }
             />
             <StatBox
               label="Current Streak"
@@ -321,6 +493,17 @@ export default function StatisticsPage() {
               )}
               icon={<Sparkles className="h-5 w-5 text-purple-300" />}
               isLoading={unlimitedGamesLoading || unlimitedWinsLoading}
+            />
+            <StatBox
+              label="Total Wins"
+              value={unlimitedWins ?? 0}
+              icon={<Trophy className="h-5 w-5 text-yellow-500" />}
+              isLoading={unlimitedWinsLoading}
+              subValue={
+                unlimitedWins
+                  ? getTotalUnlimitedWinsMessage(unlimitedWins)
+                  : "🌱 Your wiki journey begins here!"
+              }
             />
             <StatBox
               label="Current Streak"
