@@ -113,6 +113,23 @@ export default function ProtectedHomePage() {
           </Link>
         ))}
       </div>
+
+      <div>
+        <br />
+        <br />
+        <br />
+        <ul>
+          <li>Product Name: WikiGuessr</li>
+          <li>Date: 2024-12-03</li>
+          <li>Authors:</li>
+          <li>Andrew Mattice</li>
+          <li>Glenn Westman</li>
+          <li>Hameedullah Sakhizada</li>
+          <li>Jack Rowe</li>
+          <li>Jeff Nesbitt</li>
+          <li>Mike Lynch</li>
+        </ul>
+      </div>
     </div>
   );
 }
