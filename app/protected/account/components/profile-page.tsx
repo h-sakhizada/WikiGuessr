@@ -345,7 +345,7 @@ export default function ProfileClientPage() {
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-2" />
-                  Go Premium
+                  Go Premium ($0.99)
                 </>
               )}
             </Button>

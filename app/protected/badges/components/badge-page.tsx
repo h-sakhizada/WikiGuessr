@@ -14,6 +14,7 @@ import { Badge } from "@/types";
 import { Button } from "@/components/ui/button";
 import Breadcrumb from "@/components/custom/Breadcrumbs";
 import { cn } from "@/lib/utils";
+import { setUserToPremium } from "@/actions/user-actions";
 
 export default function BadgeClientPage() {
   const user = useUser();
@@ -43,6 +44,7 @@ export default function BadgeClientPage() {
   const buyClicked = async (badge: Badge) => {
     const res = await addBadgeToUserCollection(badge.id);
     if (res) {
+      await setUserToPremium(user.data?.id);
       toast.success(`Thank you for puchasing the ${badge.name} badge!`, {
         iconTheme: { primary: "green", secondary: "white" },
       });
