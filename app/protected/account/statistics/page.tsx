@@ -348,7 +348,7 @@ export default function StatisticsPage() {
     if (wins === 3) return "🎨 Triple threat achieved!";
     if (wins === 4) return "🎲 Four-tune favors the bold!";
     if (wins === 5) return "🖐️ High five - you're on fire!";
-    if (wins < 10) return "🌟 Perfect 10!";
+    if (wins < 10) return "🌟 Almost at 10!";
     if (wins < 15) return "🎮 Double-digit destroyer!";
     if (wins < 20) return "🎪 The show goes on!";
     if (wins < 25) return "🎯 Precision perfect!";
