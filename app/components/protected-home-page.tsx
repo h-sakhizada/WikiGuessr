@@ -120,7 +120,14 @@ export default function ProtectedHomePage() {
         <br />
         <ul>
           <li>Product Name: WikiGuessr</li>
-          <li>Date: 2024-12-03</li>
+          <li>
+            Date:{" "}
+            {new Date().toLocaleString("en-us", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </li>
           <li>Authors:</li>
           <li>Andrew Mattice</li>
           <li>Glenn Westman</li>
