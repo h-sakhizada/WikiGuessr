@@ -113,30 +113,6 @@ export default function ProtectedHomePage() {
           </Link>
         ))}
       </div>
-
-      <div>
-        <br />
-        <br />
-        <br />
-        <ul>
-          <li>Product Name: WikiGuessr</li>
-          <li>
-            Date:{" "}
-            {new Date().toLocaleString("en-us", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </li>
-          <li>Authors:</li>
-          <li>Andrew Mattice</li>
-          <li>Glenn Westman</li>
-          <li>Hameedullah Sakhizada</li>
-          <li>Jack Rowe</li>
-          <li>Jeff Nesbitt</li>
-          <li>Mike Lynch</li>
-        </ul>
-      </div>
     </div>
   );
 }
